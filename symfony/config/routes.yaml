@@ -1,0 +1,15 @@
+painter:
+    resource:
+        path: ../src/Painter/
+        namespace: App\Painter
+    type: attribute
+
+collection:
+    resource:
+        path: ../src/Collection/
+        namespace: App\Collection
+    type: attribute
+
+# config/routes.yaml
+api_login_check:
+    path: /api/login_check
