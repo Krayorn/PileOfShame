@@ -14,6 +14,7 @@ class Miniature
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $id;
+    
     public function __construct(
         #[ORM\ManyToOne(targetEntity: Painter::class, inversedBy: 'miniatures')]
         #[ORM\JoinColumn(
@@ -24,13 +25,26 @@ class Miniature
         )]
         private readonly Painter $painter,
         #[ORM\Column(type: 'string')]
-        private readonly string $name,
+        private string $name,
         #[ORM\Column(enumType: ProgressStatus::class)]
-        private readonly ProgressStatus $status,
+        private ProgressStatus $status,
         #[ORM\Column(type: 'integer')]
-        private readonly int $count,
+        private int $count,
     ) {
         $this->id = Uuid::uuid4();
+    }
+
+
+    public function update(?string $name, ?int $count, ?ProgressStatus $status): void {
+        if ($name !== null) {
+            $this->name = $name;
+        }
+        if ($count !== null) {
+            $this->count = $count;
+        }
+        if ($status !== null) {
+            $this->status = $status;
+        }
     }
 
     public function view(): array {

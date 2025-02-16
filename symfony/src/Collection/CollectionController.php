@@ -27,8 +27,12 @@ class CollectionController extends AbstractController
 
         $name = $data['name'] ?? '';
         $count = intval($data['count'] ?? 1);
-        $status = ProgressStatus::tryFrom($data['status']) ?? ProgressStatus::Gray;
 
+        $status = ProgressStatus::tryFrom($data['status']);
+        
+        if ($status === null) {
+            $status = ProgressStatus::Gray;
+        }
 
         $miniature = new Miniature($user, $name, $status, $count);
 
@@ -46,13 +50,36 @@ class CollectionController extends AbstractController
     {
         $entityManager->remove($miniature);
         $entityManager->flush();
-        
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('api/collections/miniatures/{miniature}', methods: 'PATCH')]
+    public function updateMini(
+        Miniature $miniature,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $status = ProgressStatus::tryFrom($data['status'] ?? '');
+        $name = $data['name'] ?? null;
+        $strCount = $data['count'] ?? null;
+        $count = null;
+        if ($strCount !== null) {
+            $count = intval($strCount);
+        }
+
+        $miniature->update($name, $count,$status);
+
+        $entityManager->flush();
+
+        return new JsonResponse($miniature->view(), Response::HTTP_OK);
     }
 
     #[Route('api/collections', methods: 'GET')]
     public function getCollection(
-        Request $request,
         MiniatureRepository $miniatureRepository,
     ): Response
     {

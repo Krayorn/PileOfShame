@@ -1,4 +1,4 @@
-export type MiniatureStatus = 'painted' | 'built' | 'gray';
+export type MiniatureStatus = 'Painted' | 'Built' | 'Gray';
 
 export interface Miniature {
     id: string;

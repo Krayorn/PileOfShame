@@ -4,7 +4,7 @@ namespace App\Collection\Miniature;
 
 enum ProgressStatus: string
 {
-    case Build = 'Build';
+    case Built = 'Built';
     case Gray = 'Gray';
     case Painted = 'Painted';
 }
