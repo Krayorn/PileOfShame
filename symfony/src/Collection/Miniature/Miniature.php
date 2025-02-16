@@ -2,6 +2,7 @@
 
 namespace App\Collection\Miniature;
 
+use App\Collection\Folder\Folder;
 use App\Painter\Painter;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
@@ -30,10 +31,21 @@ class Miniature
         private ProgressStatus $status,
         #[ORM\Column(type: 'integer')]
         private int $count,
+        #[ORM\ManyToOne(targetEntity: Folder::class, inversedBy: 'miniatures')]
+        #[ORM\JoinColumn(
+            name: 'folder_id',
+            referencedColumnName: 'id',
+            nullable: false,
+            onDelete: 'CASCADE'
+        )]
+        private Folder $folder,
     ) {
         $this->id = Uuid::uuid4();
     }
 
+    public function setFolder(Folder $folder): void {
+        $this->folder = $folder;
+    }
 
     public function update(?string $name, ?int $count, ?ProgressStatus $status): void {
         if ($name !== null) {

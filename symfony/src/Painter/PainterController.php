@@ -2,6 +2,7 @@
 
 namespace App\Painter;
 
+use App\Collection\Folder\Folder;
 use App\Player\Invitation\Invitation;
 use App\Player\Invitation\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +38,9 @@ class PainterController extends AbstractController
         }
 
         $painter = new Painter($username);
+
+        $folder = new Folder($painter, null, $username);
+        $entityManager->persist($folder);
 
         $hashedPassword = $passwordHasher->hashPassword($painter, $plainPassword);
         $painter->setPassword($hashedPassword);

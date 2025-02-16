@@ -17,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: "/collection",
     element: <Collection />,
+  },
+  {
+    path: "/collection/:folderId",
+    element: <Collection />,
   }
 ])
 

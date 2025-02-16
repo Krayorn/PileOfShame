@@ -2,6 +2,8 @@
 
 namespace App\Collection;
 
+use App\Collection\Folder\Folder;
+use App\Collection\Folder\FolderRepository;
 use App\Collection\Miniature\Miniature;
 use App\Collection\Miniature\MiniatureRepository;
 use App\Collection\Miniature\ProgressStatus;
@@ -19,6 +21,7 @@ class CollectionController extends AbstractController
     public function addMiniature(
         Request $request,
         EntityManagerInterface $entityManager,
+        FolderRepository $folderRepository,
     ): Response
     {
         /** @var $user Painter */
@@ -29,17 +32,61 @@ class CollectionController extends AbstractController
         $count = intval($data['count'] ?? 1);
 
         $status = ProgressStatus::tryFrom($data['status']);
-        
+        $folderId = $data['folderId'] ?? null;
+        if ($folderId === null) {
+            return new JsonResponse(['error' => 'Folder ID is required.'], Response::HTTP_BAD_REQUEST);
+        }
+        $folder = $folderRepository->find($folderId);
+
         if ($status === null) {
             $status = ProgressStatus::Gray;
         }
 
-        $miniature = new Miniature($user, $name, $status, $count);
+        $miniature = new Miniature($user, $name, $status, $count, $folder);
 
         $entityManager->persist($miniature);
         $entityManager->flush();
 
         return new JsonResponse($miniature->view(), Response::HTTP_CREATED);
+    }
+
+    #[Route('api/collections/folders', methods: 'POST')]
+    public function addFolder(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        FolderRepository $folderRepository,
+    ): Response
+    {
+        /** @var $user Painter */
+        $user = $this->getUser();
+        $data = json_decode($request->getContent(), true);
+
+        $name = $data['name'] ?? '';
+        $folderId = $data['folderId'] ?? null;
+        if ($folderId === null) {
+            return new JsonResponse(['error' => 'Parent folder ID is required.'], Response::HTTP_BAD_REQUEST);
+        }
+        $folder = $folderRepository->find($folderId);
+
+        $folder = new Folder($user, $folder, $name);
+        $entityManager->persist($folder);
+        $entityManager->flush();
+
+        return new JsonResponse($folder->view(), Response::HTTP_CREATED);
+    }
+
+
+    #[Route('api/collections/folders', methods: 'GET')]
+    public function getAllFolders(
+        FolderRepository $folderRepository,
+    ): Response
+    {   
+        /** @var $user Painter */
+        $user = $this->getUser();
+        $folders = $folderRepository->findBy(['painter' => $user]);
+        return new JsonResponse(array_map(function (Folder $folder) {
+            return $folder->view(false);
+        }, $folders), Response::HTTP_OK);
     }
 
     #[Route('api/collections/miniatures/{miniature}', methods: 'DELETE')]
@@ -78,16 +125,53 @@ class CollectionController extends AbstractController
         return new JsonResponse($miniature->view(), Response::HTTP_OK);
     }
 
-    #[Route('api/collections', methods: 'GET')]
-    public function getCollection(
+    #[Route('api/collections/miniatures', methods: 'PATCH')]
+    public function moveMiniatures(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        FolderRepository $folderRepository,
         MiniatureRepository $miniatureRepository,
     ): Response
     {
         /** @var $user Painter */
         $user = $this->getUser();
+        $data = json_decode($request->getContent(), true);
 
-        $miniatures = $miniatureRepository->findBy(['painter' => $user]);
+        $miniatureIds = $data['miniatureIds'] ?? [];
+        $targetFolderId = $data['targetFolderId'] ?? null;
 
-        return new JsonResponse(array_map(fn($mini) => $mini->view(), $miniatures), Response::HTTP_OK);
+        if ($targetFolderId === null) {
+            return new JsonResponse(['error' => 'Target folder ID is required.'], Response::HTTP_BAD_REQUEST);
+        }   
+
+        $targetFolder = $folderRepository->findOneBy(['painter' => $user, 'id' => $targetFolderId]);
+    
+        $miniatures = $miniatureRepository->findBy(['painter' => $user, 'id' => $miniatureIds]);
+        foreach ($miniatures as $miniature) {
+            $miniature->setFolder($targetFolder);
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('api/collections', methods: 'GET')]
+    public function getCollection(
+        Request $request,
+        FolderRepository $folderRepository,
+    ): Response
+    {
+        /** @var $user Painter */
+        $user = $this->getUser();
+
+        $folderId = $request->query->get('folderId');
+        if ($folderId !== null) {
+            $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+        } else {
+            $folder = $folderRepository->findOneBy(['painter' => $user, 'parentFolder' => null]);
+        }
+
+        return new JsonResponse($folder->view(), Response::HTTP_OK);
     }
 }

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import type { Miniature, MiniatureStatus } from '../types/miniature';
+import { Folder } from '../types/folder';
 
 export function Collection() {
+    const { folderId } = useParams();
     const navigate = useNavigate();
+    const [folder, setFolder] = useState<Folder | null>(null);
     const [miniatures, setMiniatures] = useState<Miniature[]>([]);
     const [showAddForm, setShowAddForm] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -15,6 +18,12 @@ export function Collection() {
     });
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<Miniature>>({});
+    const [showAddFolderForm, setShowAddFolderForm] = useState(false);
+    const [newFolderName, setNewFolderName] = useState('');
+    const [moveMode, setMoveMode] = useState(false);
+    const [selectedMiniatures, setSelectedMiniatures] = useState<string[]>([]);
+    const [allFolders, setAllFolders] = useState<{id: string, name: string}[]>([]);
+    const [targetFolderId, setTargetFolderId] = useState<string>('');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -25,7 +34,11 @@ export function Collection() {
 
         const fetchCollection = async () => {
             try {
-                const response = await fetch(import.meta.env.VITE_API_HOST + 'api/collections', {
+                const endpoint = folderId 
+                    ? `api/collections?folderId=${folderId}`
+                    : 'api/collections';
+                    
+                const response = await fetch(import.meta.env.VITE_API_HOST + endpoint, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -35,8 +48,9 @@ export function Collection() {
                     throw new Error('Failed to fetch collection');
                 }
 
-                const data = await response.json();
-                setMiniatures(data);
+                const data: Folder = await response.json();
+                setFolder(data);
+                setMiniatures(data.miniatures);
             } catch (err) {
                 console.error('Error fetching collection:', err);
                 setError('Failed to load collection. Please try again later.');
@@ -46,7 +60,33 @@ export function Collection() {
         };
 
         fetchCollection();
-    }, [navigate]);
+    }, [navigate, folderId]);
+
+    useEffect(() => {
+        const fetchAllFolders = async () => {
+            if (!moveMode) return;
+            
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(import.meta.env.VITE_API_HOST + 'api/collections/folders', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch folders');
+                
+                const data = await response.json();
+                // Filter out current folder
+                setAllFolders(data.filter((f: {id: string}) => f.id !== folderId));
+            } catch (err) {
+                console.error('Failed to fetch folders:', err);
+                setError('Failed to load folders for move operation.');
+            }
+        };
+
+        fetchAllFolders();
+    }, [moveMode, folderId]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -67,7 +107,8 @@ export function Collection() {
                 body: JSON.stringify({
                     name: newMiniature.name,
                     count: newMiniature.count,
-                    status: newMiniature.status
+                    status: newMiniature.status,
+                    folderId: folderId || folder?.id
                 })
             });
 
@@ -85,7 +126,7 @@ export function Collection() {
             setShowAddForm(false);
         } catch (err) {
             console.error('Failed to add miniature:', err);
-            // You might want to show an error message to the user here
+            setError('Failed to add miniature. Please try again later.');
         }
     };
 
@@ -176,11 +217,97 @@ export function Collection() {
         }
     };
 
+    const handleAddFolder = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        
+        try {
+            const response = await fetch(import.meta.env.VITE_API_HOST + 'api/collections/folders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: newFolderName,
+                    folderId: folderId || folder?.id
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create folder');
+            }
+
+            const addedFolder = await response.json();
+            setFolder(prev => prev ? {
+                ...prev,
+                folders: [...prev.folders, addedFolder]
+            } : null);
+            setNewFolderName('');
+            setShowAddFolderForm(false);
+        } catch (err) {
+            console.error('Failed to create folder:', err);
+            setError('Failed to create folder. Please try again later.');
+        }
+    };
+
+    const handleMoveMiniatures = async () => {
+        if (!targetFolderId || selectedMiniatures.length === 0) return;
+        
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(import.meta.env.VITE_API_HOST + 'api/collections/miniatures', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    miniatureIds: selectedMiniatures,
+                    targetFolderId: targetFolderId
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to move miniatures');
+
+            // Remove moved miniatures from the current list
+            setMiniatures(miniatures.filter(m => !selectedMiniatures.includes(m.id)));
+            
+            // Reset move mode
+            setMoveMode(false);
+            setSelectedMiniatures([]);
+            setTargetFolderId('');
+        } catch (err) {
+            console.error('Failed to move miniatures:', err);
+            setError('Failed to move miniatures. Please try again.');
+        }
+    };
+
+    const toggleMiniatureSelection = (miniatureId: string) => {
+        setSelectedMiniatures(prev => 
+            prev.includes(miniatureId) 
+                ? prev.filter(id => id !== miniatureId)
+                : [...prev, miniatureId]
+        );
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold">My Miniatures Collection</h1>
+                    <div>
+                        <h1 className="text-3xl font-bold">
+                            {folder?.name || 'My Collection'}
+                        </h1>
+                        {folderId && (
+                            <Link 
+                                to="/collection" 
+                                className="text-blue-600 hover:text-blue-800 text-sm"
+                            >
+                                ← Back to main collection
+                            </Link>
+                        )}
+                    </div>
                     <button
                         onClick={handleLogout}
                         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
@@ -202,15 +329,131 @@ export function Collection() {
                     </div>
                 ) : (
                     <>
-                        <div className="mb-6">
-                            {!showAddForm ? (
+                        <div className="mb-8">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-semibold">Folders</h2>
                                 <button
-                                    onClick={() => setShowAddForm(true)}
+                                    onClick={() => setShowAddFolderForm(true)}
                                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                 >
-                                    Add New Miniature
+                                    Add New Folder
                                 </button>
-                            ) : (
+                            </div>
+
+                            {showAddFolderForm && (
+                                <div className="mb-4 bg-white rounded-lg shadow p-6">
+                                    <h3 className="text-lg font-bold mb-4">Create New Folder</h3>
+                                    <form onSubmit={handleAddFolder} className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Folder Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={newFolderName}
+                                                onChange={(e) => setNewFolderName(e.target.value)}
+                                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                placeholder="Enter folder name"
+                                            />
+                                        </div>
+                                        <div className="flex space-x-4">
+                                            <button
+                                                type="submit"
+                                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                            >
+                                                Create Folder
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowAddFolderForm(false);
+                                                    setNewFolderName('');
+                                                }}
+                                                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            )}
+
+                            {folder?.folders && folder.folders.length > 0 && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {folder.folders.map(subfolder => (
+                                        <Link
+                                            key={subfolder.id}
+                                            to={`/collection/${subfolder.id}`}
+                                            className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+                                        >
+                                            <div className="flex items-center">
+                                                <svg className="w-6 h-6 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                                </svg>
+                                                <span className="text-gray-700 font-medium">{subfolder.name}</span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mb-6">
+                            <div className="flex justify-between items-center mb-4">
+                                {!moveMode ? (
+                                    <>
+                                        <button
+                                            onClick={() => setShowAddForm(true)}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                        >
+                                            Add New Miniature
+                                        </button>
+                                        {miniatures.length > 0 && (
+                                            <button
+                                                onClick={() => setMoveMode(true)}
+                                                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                                            >
+                                                Move Miniatures
+                                            </button>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="flex items-center space-x-4">
+                                        <select
+                                            value={targetFolderId}
+                                            onChange={(e) => setTargetFolderId(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-md"
+                                        >
+                                            <option value="">Select target folder</option>
+                                            {allFolders.map(folder => (
+                                                <option key={folder.id} value={folder.id}>
+                                                    {folder.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={handleMoveMiniatures}
+                                            disabled={!targetFolderId || selectedMiniatures.length === 0}
+                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+                                        >
+                                            Move Selected ({selectedMiniatures.length})
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setMoveMode(false);
+                                                setSelectedMiniatures([]);
+                                                setTargetFolderId('');
+                                            }}
+                                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {showAddForm && (
                                 <div className="bg-white rounded-lg shadow p-6">
                                     <h2 className="text-xl font-bold mb-4">Add New Miniature</h2>
                                     <form onSubmit={handleAddMiniature} className="space-y-4">
@@ -291,6 +534,11 @@ export function Collection() {
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
+                                            {moveMode && (
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Select
+                                                </th>
+                                            )}
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Name
                                             </th>
@@ -308,6 +556,16 @@ export function Collection() {
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {miniatures.map((miniature) => (
                                             <tr key={miniature.id}>
+                                                {moveMode && (
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedMiniatures.includes(miniature.id)}
+                                                            onChange={() => toggleMiniatureSelection(miniature.id)}
+                                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                        />
+                                                    </td>
+                                                )}
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {editingId === miniature.id ? (
                                                         <input
