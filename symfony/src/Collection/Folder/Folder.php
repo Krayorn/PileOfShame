@@ -40,13 +40,18 @@ class Folder
             nullable: true,
             onDelete: 'CASCADE'
         )]
-        private readonly ?Folder $parentFolder,
+        private ?Folder $parentFolder,
         #[ORM\Column(type: 'string')]
         private string $name,
     ) {
         $this->id = Uuid::uuid4();
         $this->folders = new ArrayCollection();
         $this->miniatures = new ArrayCollection();
+    }
+
+    public function setParentFolder(?Folder $parentFolder): void
+    {
+        $this->parentFolder = $parentFolder;
     }
 
     public function view(bool $deep = true): array {

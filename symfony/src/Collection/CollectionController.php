@@ -75,6 +75,19 @@ class CollectionController extends AbstractController
         return new JsonResponse($folder->view(), Response::HTTP_CREATED);
     }
 
+    #[Route('api/collections/folders/{folder}', methods: 'DELETE')]
+    public function deleteFolder(
+        Folder $folder,
+        EntityManagerInterface $entityManager,
+    ): Response
+    {
+        /** @var $user Painter */
+        $user = $this->getUser();
+        $entityManager->remove($folder);
+        $entityManager->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
 
     #[Route('api/collections/folders', methods: 'GET')]
     public function getAllFolders(
@@ -138,6 +151,7 @@ class CollectionController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         $miniatureIds = $data['miniatureIds'] ?? [];
+        $folderIds = $data['folderIds'] ?? [];
         $targetFolderId = $data['targetFolderId'] ?? null;
 
         if ($targetFolderId === null) {
@@ -149,6 +163,11 @@ class CollectionController extends AbstractController
         $miniatures = $miniatureRepository->findBy(['painter' => $user, 'id' => $miniatureIds]);
         foreach ($miniatures as $miniature) {
             $miniature->setFolder($targetFolder);
+        }
+
+        $folders = $folderRepository->findBy(['painter' => $user, 'id' => $miniatureIds]);
+        foreach ($folders as $folder) {
+            $folder->setParentFolder($targetFolder);
         }
 
         $entityManager->flush();

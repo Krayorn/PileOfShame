@@ -22,6 +22,7 @@ export function Collection() {
     const [newFolderName, setNewFolderName] = useState('');
     const [moveMode, setMoveMode] = useState(false);
     const [selectedMiniatures, setSelectedMiniatures] = useState<string[]>([]);
+    const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
     const [allFolders, setAllFolders] = useState<{id: string, name: string}[]>([]);
     const [targetFolderId, setTargetFolderId] = useState<string>('');
 
@@ -251,8 +252,34 @@ export function Collection() {
         }
     };
 
+    const handleDeleteFolder = async (folderId: string) => {
+        const token = localStorage.getItem('token');
+        
+        try {
+            const response = await fetch(import.meta.env.VITE_API_HOST + `api/collections/folders/${folderId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete folder');
+            }
+
+            // Remove the deleted folder from state
+            setFolder(prev => prev ? {
+                ...prev,
+                folders: prev.folders.filter(f => f.id !== folderId)
+            } : null);
+        } catch (err) {
+            console.error('Failed to delete folder:', err);
+            setError('Failed to delete folder. Please try again later.');
+        }
+    };
+
     const handleMoveMiniatures = async () => {
-        if (!targetFolderId || selectedMiniatures.length === 0) return;
+        if (!targetFolderId || (selectedMiniatures.length === 0 && selectedFolders.length === 0)) return;
         
         const token = localStorage.getItem('token');
         try {
@@ -264,22 +291,30 @@ export function Collection() {
                 },
                 body: JSON.stringify({
                     miniatureIds: selectedMiniatures,
+                    folderIds: selectedFolders,
                     targetFolderId: targetFolderId
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to move miniatures');
+            if (!response.ok) throw new Error('Failed to move items');
 
             // Remove moved miniatures from the current list
             setMiniatures(miniatures.filter(m => !selectedMiniatures.includes(m.id)));
             
+            // Remove moved folders from the current list
+            setFolder(prev => prev ? {
+                ...prev,
+                folders: prev.folders.filter(f => !selectedFolders.includes(f.id))
+            } : null);
+            
             // Reset move mode
             setMoveMode(false);
             setSelectedMiniatures([]);
+            setSelectedFolders([]);
             setTargetFolderId('');
         } catch (err) {
-            console.error('Failed to move miniatures:', err);
-            setError('Failed to move miniatures. Please try again.');
+            console.error('Failed to move items:', err);
+            setError('Failed to move items. Please try again.');
         }
     };
 
@@ -288,6 +323,14 @@ export function Collection() {
             prev.includes(miniatureId) 
                 ? prev.filter(id => id !== miniatureId)
                 : [...prev, miniatureId]
+        );
+    };
+
+    const toggleFolderSelection = (folderId: string) => {
+        setSelectedFolders(prev => 
+            prev.includes(folderId) 
+                ? prev.filter(id => id !== folderId)
+                : [...prev, folderId]
         );
     };
 
@@ -382,18 +425,51 @@ export function Collection() {
                             {folder?.folders && folder.folders.length > 0 && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {folder.folders.map(subfolder => (
-                                        <Link
-                                            key={subfolder.id}
-                                            to={`/collection/${subfolder.id}`}
-                                            className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
-                                        >
-                                            <div className="flex items-center">
-                                                <svg className="w-6 h-6 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                                                </svg>
-                                                <span className="text-gray-700 font-medium">{subfolder.name}</span>
-                                            </div>
-                                        </Link>
+                                        <div key={subfolder.id} className="relative">
+                                            {moveMode ? (
+                                                <div className="p-4 bg-white rounded-lg shadow">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedFolders.includes(subfolder.id)}
+                                                            onChange={() => toggleFolderSelection(subfolder.id)}
+                                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+                                                        />
+                                                        <svg className="w-6 h-6 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                                        </svg>
+                                                        <span className="text-gray-700 font-medium">{subfolder.name}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+                                                    <div className="flex items-center justify-between">
+                                                        <Link
+                                                            to={`/collection/${subfolder.id}`}
+                                                            className="flex items-center flex-grow"
+                                                        >
+                                                            <svg className="w-6 h-6 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                                            </svg>
+                                                            <span className="text-gray-700 font-medium">{subfolder.name}</span>
+                                                        </Link>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                if (confirm('Are you sure you want to delete this folder and all its contents?')) {
+                                                                    handleDeleteFolder(subfolder.id);
+                                                                }
+                                                            }}
+                                                            className="ml-2 text-red-600 hover:text-red-800"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -434,15 +510,16 @@ export function Collection() {
                                         </select>
                                         <button
                                             onClick={handleMoveMiniatures}
-                                            disabled={!targetFolderId || selectedMiniatures.length === 0}
+                                            disabled={!targetFolderId || (selectedMiniatures.length === 0 && selectedFolders.length === 0)}
                                             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
                                         >
-                                            Move Selected ({selectedMiniatures.length})
+                                            Move Selected ({selectedMiniatures.length + selectedFolders.length})
                                         </button>
                                         <button
                                             onClick={() => {
                                                 setMoveMode(false);
                                                 setSelectedMiniatures([]);
+                                                setSelectedFolders([]);
                                                 setTargetFolderId('');
                                             }}
                                             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
@@ -528,7 +605,7 @@ export function Collection() {
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             {miniatures.length === 0 ? (
                                 <div className="p-6 text-center text-gray-500">
-                                    No miniatures in your collection yet. Add some using the button above!
+                                    No miniatures in this folder yet. Add some using the button above!
                                 </div>
                             ) : (
                                 <table className="min-w-full divide-y divide-gray-200">
