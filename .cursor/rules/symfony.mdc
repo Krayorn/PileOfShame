@@ -1,0 +1,12 @@
+---
+description: When working on php code
+globs: symfony/src
+---
+
+The framework used is Symfony and we're using the doctrine ORM to access our SQLITE database. 
+
+Write simple code without side effects but avoid repetitions
+
+- directly set a class properties in the constructor instead of creating them outside and assigning them in the construct
+- use a view method on each entity that returns an array containing the data we want to return
+

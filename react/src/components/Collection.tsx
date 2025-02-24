@@ -360,6 +360,10 @@ export function Collection() {
         return total === 0 ? 0 : Math.round((stats.Painted / total) * 100);
     };
 
+    const calculateTotalMiniatures = (stats: FolderStatistics): number => {
+        return stats.Built + stats.Gray + stats.Painted;
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-7xl mx-auto">
@@ -369,7 +373,7 @@ export function Collection() {
                             {folder?.name || 'My Collection'}
                             {statistics && folder?.id && statistics[folder.id] && (
                                 <span className="ml-4 text-lg font-normal text-gray-600">
-                                    ({calculatePaintedPercentage(statistics[folder.id])}% painted)
+                                    ({calculatePaintedPercentage(statistics[folder.id])}% painted - {calculateTotalMiniatures(statistics[folder.id])} miniatures)
                                 </span>
                             )}
                         </h1>
@@ -605,7 +609,7 @@ export function Collection() {
                                                             <span className="text-gray-700 font-medium">{subfolder.name}</span>
                                                             {statistics && statistics[subfolder.id] && (
                                                                 <span className="ml-2 text-sm text-gray-500">
-                                                                    ({calculatePaintedPercentage(statistics[subfolder.id])}% painted)
+                                                                    ({calculatePaintedPercentage(statistics[subfolder.id])}% painted - {calculateTotalMiniatures(statistics[subfolder.id])} miniatures)
                                                                 </span>
                                                             )}
                                                         </Link>
