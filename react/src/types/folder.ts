@@ -5,4 +5,8 @@ export interface Folder {
     name: string;
     folders: Folder[];
     miniatures: Miniature[];
+    parent: {
+        id: string|null;
+        name: string|null;
+    };
 } 

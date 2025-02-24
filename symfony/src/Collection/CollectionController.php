@@ -165,7 +165,7 @@ class CollectionController extends AbstractController
             $miniature->setFolder($targetFolder);
         }
 
-        $folders = $folderRepository->findBy(['painter' => $user, 'id' => $miniatureIds]);
+        $folders = $folderRepository->findBy(['painter' => $user, 'id' => $folderIds]);
         foreach ($folders as $folder) {
             $folder->setParentFolder($targetFolder);
         }
@@ -192,5 +192,26 @@ class CollectionController extends AbstractController
         }
 
         return new JsonResponse($folder->view(), Response::HTTP_OK);
+    }
+
+    #[Route('api/collections/stats', methods: 'GET')]
+    public function getCollectionStats(
+        Request $request,
+        FolderRepository $folderRepository,
+    ): Response
+    {
+        /** @var $user Painter */
+        $user = $this->getUser();
+
+        $folderId = $request->query->get('folderId');
+        if ($folderId !== null) {
+            $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+        } else {
+            $folder = $folderRepository->findOneBy(['painter' => $user, 'parentFolder' => null]);
+        }
+
+        $stats = $folderRepository->getStats($folder);
+
+        return new JsonResponse($stats->view(), Response::HTTP_OK);
     }
 }

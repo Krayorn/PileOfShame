@@ -54,6 +54,21 @@ class Folder
         $this->parentFolder = $parentFolder;
     }
 
+    public function getId(): UuidInterface
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getFolders(): Collection
+    {
+        return $this->folders;
+    }
+
     public function view(bool $deep = true): array {
         $view = [
             'id' => $this->id,
@@ -61,6 +76,7 @@ class Folder
         ];
 
         if ($deep) {
+            $view['parent'] = ['id' => $this->parentFolder?->getId(), 'name' => $this->parentFolder?->getName()];
             $view['miniatures'] = $this->miniatures->map(fn (Miniature $miniature) => $miniature->view())->toArray();
             $view['folders'] = $this->folders->map(fn (Folder $folder) => $folder->view(false))->toArray();
         }
