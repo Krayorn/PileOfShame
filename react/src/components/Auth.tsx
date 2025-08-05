@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '../api';
 
 type AuthMode = 'login' | 'register';
 
@@ -29,25 +30,14 @@ export function Auth() {
         // }
 
         try {
-            const endpoint = mode === 'login' ? 'api/login_check' : 'api/register';
-            const response = await fetch(import.meta.env.VITE_API_HOST + endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Authentication failed');
-            }
-
-            const data = await response.json();
-            
-            if (mode === 'login' && data.token) {
-                localStorage.setItem('token', data.token);
-                navigate('/collection');
-            } else if (mode === 'register') {
+            if (mode === 'login') {
+                const response = await authApi.login({ username, password });
+                if (response.data.token) {
+                    localStorage.setItem('token', response.data.token);
+                    navigate('/collection');
+                }
+            } else {
+                await authApi.register({ username, password });
                 // After successful registration, switch to login mode
                 setMode('login');
                 setPassword('');
