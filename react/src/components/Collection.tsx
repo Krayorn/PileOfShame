@@ -3,6 +3,7 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import type { Miniature, MiniatureStatus } from '../types/miniature';
 import { Folder } from '../types/folder';
 import type { CollectionStatistics, FolderStatistics } from '../types/statistics';
+import { SearchableSelect } from './SearchableSelect';
 
 export function Collection() {
     const { folderId } = useParams();
@@ -99,8 +100,7 @@ export function Collection() {
                 if (!response.ok) throw new Error('Failed to fetch folders');
                 
                 const data = await response.json();
-                // Filter out current folder
-                setAllFolders(data.filter((f: {id: string}) => f.id !== folderId));
+                setAllFolders(data);
             } catch (err) {
                 console.error('Failed to fetch folders:', err);
                 setError('Failed to load folders for move operation.');
@@ -142,10 +142,9 @@ export function Collection() {
             setMiniatures([...miniatures, addedMiniature]);
             setNewMiniature({
                 name: '',
-                count: 1,
-                status: 'Gray'
+                count: newMiniature.count,
+                status: newMiniature.status
             });
-            //setShowAddForm(false);
         } catch (err) {
             console.error('Failed to add miniature:', err);
             setError('Failed to add miniature. Please try again later.');
@@ -433,18 +432,13 @@ export function Collection() {
                                 </div>
                                 {moveMode && (
                                     <div className="flex items-center space-x-4">
-                                        <select
+                                        <SearchableSelect
+                                            options={allFolders}
                                             value={targetFolderId}
-                                            onChange={(e) => setTargetFolderId(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md"
-                                        >
-                                            <option value="">Select target folder</option>
-                                            {allFolders.map(folder => (
-                                                <option key={folder.id} value={folder.id}>
-                                                    {folder.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={setTargetFolderId}
+                                            placeholder="Search for target folder..."
+                                            className="w-64"
+                                        />
                                         <button
                                             onClick={handleMoveMiniatures}
                                             disabled={!targetFolderId || (selectedMiniatures.length === 0 && selectedFolders.length === 0)}
@@ -682,6 +676,11 @@ export function Collection() {
                                                             type="text"
                                                             value={editForm.name || ''}
                                                             onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateMiniature(miniature.id);
+                                                                }
+                                                            }}
                                                             className="w-full px-2 py-1 border rounded"
                                                         />
                                                     ) : (
@@ -695,6 +694,11 @@ export function Collection() {
                                                             min="1"
                                                             value={editForm.count || ''}
                                                             onChange={(e) => setEditForm({...editForm, count: parseInt(e.target.value)})}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateMiniature(miniature.id);
+                                                                }
+                                                            }}
                                                             className="w-full px-2 py-1 border rounded"
                                                         />
                                                     ) : (
@@ -706,6 +710,11 @@ export function Collection() {
                                                         <select
                                                             value={editForm.status}
                                                             onChange={(e) => setEditForm({...editForm, status: e.target.value as MiniatureStatus})}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateMiniature(miniature.id);
+                                                                }
+                                                            }}
                                                             className="w-full px-2 py-1 border rounded"
                                                         >
                                                             <option value="Gray">Gray</option>
