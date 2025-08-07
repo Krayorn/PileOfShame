@@ -54,6 +54,13 @@ class Folder
         $this->parentFolder = $parentFolder;
     }
 
+    public function update(?string $name): void
+    {
+        if ($name !== null) {
+            $this->name = $name;
+        }
+    }
+
     public function getId(): UuidInterface
     {
         return $this->id;
@@ -67,6 +74,11 @@ class Folder
     public function getFolders(): Collection
     {
         return $this->folders;
+    }
+
+    public function getPainter(): Painter
+    {
+        return $this->painter;
     }
 
     public function view(bool $deep = true): array {

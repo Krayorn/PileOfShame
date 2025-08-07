@@ -89,6 +89,32 @@ class CollectionController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('api/collections/folders/{folder}', methods: 'PATCH')]
+    public function updateFolder(
+        Folder $folder,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response
+    {
+        /** @var $user Painter */
+        $user = $this->getUser();
+        
+        // Ensure user can only update their own folders
+        if ($folder->getPainter() !== $user) {
+            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+        
+        $data = json_decode($request->getContent(), true);
+
+        $name = $data['name'] ?? null;
+
+        $folder->update($name);
+
+        $entityManager->flush();
+
+        return new JsonResponse($folder->view(false), Response::HTTP_OK);
+    }
+
     #[Route('api/collections/folders', methods: 'GET')]
     public function getAllFolders(
         FolderRepository $folderRepository,

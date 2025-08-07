@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import type { Miniature, MiniatureStatus } from '../types/miniature';
 import { Folder } from '../types/folder';
-import type { CollectionStatistics } from '../types/statistics';
+import type { CollectionStatistics, FolderStatistics } from '../types/statistics';
 import { MiniaturesTable } from './MiniaturesTable';
 import { AddMiniatureForm } from './AddMiniatureForm';
 import { AddFolderForm } from './AddFolderForm';
@@ -27,6 +27,15 @@ export function Collection() {
     const [allFolders, setAllFolders] = useState<{id: string, name: string}[]>([]);
     const [targetFolderId, setTargetFolderId] = useState<string>('');
     const [statistics, setStatistics] = useState<CollectionStatistics | null>(null);
+
+    const calculatePaintedPercentage = (stats: FolderStatistics): number => {
+        const total = stats.Built + stats.Gray + stats.Painted;
+        return total === 0 ? 0 : Math.round((stats.Painted / total) * 100);
+    };
+
+    const calculateTotalMiniatures = (stats: FolderStatistics): number => {
+        return stats.Built + stats.Gray + stats.Painted;
+    };
 
     useEffect(() => {
         const fetchCollection = async () => {
@@ -77,9 +86,20 @@ export function Collection() {
                 name: miniatureData.name,
                 count: miniatureData.count,
                 status: miniatureData.status,
-                    folderId: folderId || folder?.id
+                folderId: folderId || folder?.id
             });
 
+            setStatistics(prev => {
+                if (!prev) return null;
+                const folderIdForStats = response.data.folderId || folder?.id;
+                const newStats = { ...prev };
+                newStats[folderIdForStats] = {
+                    Built: newStats[folderIdForStats].Built + (miniatureData.status === 'Built' ? miniatureData.count : 0),
+                    Gray: newStats[folderIdForStats].Gray + (miniatureData.status === 'Gray' ? miniatureData.count : 0),
+                    Painted: newStats[folderIdForStats].Painted + (miniatureData.status === 'Painted' ? miniatureData.count : 0)
+                };
+                return newStats;
+            });
             setMiniatures([...miniatures, response.data]);
         } catch (err) {
             console.error('Failed to add miniature:', err);
@@ -136,9 +156,21 @@ export function Collection() {
 
         try {
             const response = await collectionApi.updateMiniature(miniatureId, payload);
+            const oldMiniature = miniatures.find(m => m.id === miniatureId);
             setMiniatures(miniatures.map(m => 
                 m.id === miniatureId ? response.data : m
             ));
+            setStatistics(prev => {
+                if (!prev) return null;
+                const folderIdForStats = response.data.folderId || folder?.id;
+                const newStats = { ...prev };
+                newStats[folderIdForStats] = {
+                    Built: newStats[folderIdForStats].Built + (payload.status === 'Built' ? response.data.count : 0) - (oldMiniature?.status === 'Built' ? oldMiniature.count : 0), 
+                    Gray: newStats[folderIdForStats].Gray + (payload.status === 'Gray' ? response.data.count : 0) - (oldMiniature?.status === 'Gray' ? oldMiniature.count : 0),
+                    Painted: newStats[folderIdForStats].Painted + (payload.status === 'Painted' ? response.data.count : 0) - (oldMiniature?.status === 'Painted' ? oldMiniature.count : 0)
+                };
+                return newStats;
+            });
             setEditingId(null);
             setEditForm({});
         } catch (err) {
@@ -153,6 +185,15 @@ export function Collection() {
                 name: folderName,
                     folderId: folderId || folder?.id
             });
+
+            setStatistics(prev => prev ? {
+                ...prev,
+                [response.data.id]: {
+                    Built: 0,
+                    Gray: 0,
+                    Painted: 0
+                }
+            } : null);
 
             setFolder(prev => prev ? {
                 ...prev,
@@ -175,6 +216,21 @@ export function Collection() {
         } catch (err) {
             console.error('Failed to delete folder:', err);
             setError('Failed to delete folder. Please try again later.');
+        }
+    };
+
+    const handleUpdateFolder = async (folderId: string, folder: Folder) => {
+        try {
+            // Update the folder in state
+            setFolder(prev => prev ? {
+                ...prev,
+                folders: prev.folders.map(f => 
+                    f.id === folderId ? folder : f
+                )
+            } : null);
+        } catch (err) {
+            console.error('Failed to update folder:', err);
+            setError('Failed to update folder. Please try again later.');
         }
     };
 
@@ -235,8 +291,8 @@ export function Collection() {
                             {folder?.name || 'My Collection'}
                             {statistics && folder?.id && statistics[folder.id] && (
                                 <span className="ml-4 text-lg font-normal text-gray-600">
-                                    ({Math.round((statistics[folder.id].Painted / (statistics[folder.id].Built + statistics[folder.id].Gray + statistics[folder.id].Painted)) * 100)}% painted - {statistics[folder.id].Built + statistics[folder.id].Gray + statistics[folder.id].Painted} miniatures)
-                                </span>
+                                ({calculatePaintedPercentage(statistics[folder.id])}% painted - {calculateTotalMiniatures(statistics[folder.id])} miniatures)
+                            </span>
                             )}
                         </h1>
                         {folderId && folder?.parent?.id && (
@@ -335,6 +391,7 @@ export function Collection() {
                                             isSelected={selectedFolders.includes(subfolder.id)}
                                             onDelete={handleDeleteFolder}
                                             onSelectionToggle={toggleFolderSelection}
+                                            onUpdate={handleUpdateFolder}
                                         />
                                     ))}
                                 </div>

@@ -90,6 +90,13 @@ export const collectionApi = {
     return api.delete(`api/collections/folders/${folderId}`);
   },
 
+  // Update folder
+  updateFolder: (folderId: string, data: Partial<{
+    name: string;
+  }>) => {
+    return api.patch(`api/collections/folders/${folderId}`, data);
+  },
+
   // Move miniatures/folders
   moveItems: (data: {
     miniatureIds: string[];
