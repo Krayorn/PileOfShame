@@ -14,6 +14,7 @@ interface MiniaturesTableProps {
     onCancelEdit: () => void;
     onSelectionToggle: (miniatureId: string) => void;
     onEditFormChange: (form: Partial<Miniature>) => void;
+    onImageUpload: (miniatureId: string, files: FileList) => void;
 }
 
 export function MiniaturesTable({
@@ -27,7 +28,8 @@ export function MiniaturesTable({
     onUpdate,
     onCancelEdit,
     onSelectionToggle,
-    onEditFormChange
+    onEditFormChange,
+    onImageUpload
 }: MiniaturesTableProps) {
     if (miniatures.length === 0) {
         return (
@@ -78,6 +80,7 @@ export function MiniaturesTable({
                             onCancelEdit={onCancelEdit}
                             onSelectionToggle={onSelectionToggle}
                             onEditFormChange={onEditFormChange}
+                            onImageUpload={onImageUpload}
                         />
                     ))}
                 </tbody>

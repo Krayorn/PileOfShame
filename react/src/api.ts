@@ -72,6 +72,16 @@ export const collectionApi = {
     return api.patch(`api/collections/miniatures/${miniatureId}`, data);
   },
 
+  // Upload images for miniature
+  uploadImages: (miniatureId: string, formData: FormData) => {
+    return api.post(`api/collections/miniatures/${miniatureId}/pictures`, formData);
+  },
+
+  // Delete picture
+  deletePicture: (pictureId: string) => {
+    return api.delete(`api/collections/pictures/${pictureId}`);
+  },
+
   // Delete miniature
   deleteMiniature: (miniatureId: string) => {
     return api.delete(`api/collections/miniatures/${miniatureId}`);

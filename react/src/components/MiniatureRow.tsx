@@ -1,5 +1,7 @@
 import React from 'react';
 import type { Miniature, MiniatureStatus } from '../types/miniature';
+import { ImageUploadDialog } from './ImageUploadDialog';
+import { buildImageUrl } from '../lib/imageUtils';
 
 interface MiniatureRowProps {
     miniature: Miniature;
@@ -13,6 +15,7 @@ interface MiniatureRowProps {
     onCancelEdit: () => void;
     onSelectionToggle: (miniatureId: string) => void;
     onEditFormChange: (form: Partial<Miniature>) => void;
+    onImageUpload: (miniatureId: string, files: FileList) => void;
 }
 
 export function MiniatureRow({
@@ -26,7 +29,8 @@ export function MiniatureRow({
     onUpdate,
     onCancelEdit,
     onSelectionToggle,
-    onEditFormChange
+    onEditFormChange,
+    onImageUpload
 }: MiniatureRowProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
@@ -120,6 +124,10 @@ export function MiniatureRow({
                     </div>
                 ) : (
                     <div className="space-x-2">
+                        <ImageUploadDialog 
+                            miniatureId={miniature.id} 
+                            onUpload={onImageUpload}
+                        />
                         <button
                             onClick={() => onEdit(miniature)}
                             className="text-blue-600 hover:text-blue-900"

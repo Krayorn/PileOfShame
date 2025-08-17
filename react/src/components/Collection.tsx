@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-import type { Miniature, MiniatureStatus } from '../types/miniature';
+import type { Miniature, MiniatureStatus, Picture } from '../types/miniature';
 import { Folder } from '../types/folder';
 import type { CollectionStatistics, FolderStatistics } from '../types/statistics';
 import { MiniaturesTable } from './MiniaturesTable';
@@ -8,13 +8,13 @@ import { AddMiniatureForm } from './AddMiniatureForm';
 import { AddFolderForm } from './AddFolderForm';
 import { FolderItem } from './FolderItem';
 import { MoveControls } from './MoveControls';
+import { Album } from './Album';
 import { collectionApi } from '../api';
 
 export function Collection() {
     const { folderId } = useParams();
     const navigate = useNavigate();
     const [folder, setFolder] = useState<Folder | null>(null);
-    const [miniatures, setMiniatures] = useState<Miniature[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -37,6 +37,16 @@ export function Collection() {
         return stats.Built + stats.Gray + stats.Painted;
     };
 
+    const getAllPicturesFromFolder = (folder: Folder): Picture[] => {
+        const pictures: Picture[] = [];
+        
+        folder.miniatures.forEach(miniature => {
+            pictures.push(...miniature.pictures);
+        });
+        
+        return pictures;
+    };
+
     useEffect(() => {
         const fetchCollection = async () => {
             try {
@@ -46,7 +56,6 @@ export function Collection() {
                 ]);
 
                 setFolder(collectionResponse.data);
-                setMiniatures(collectionResponse.data.miniatures);
                 setStatistics(statsResponse.data);
             } catch (err) {
                 console.error('Error fetching collection:', err);
@@ -100,7 +109,10 @@ export function Collection() {
                 };
                 return newStats;
             });
-            setMiniatures([...miniatures, response.data]);
+            setFolder(prev => prev ? {
+                ...prev,
+                miniatures: [...prev.miniatures, response.data]
+            } : null);
         } catch (err) {
             console.error('Failed to add miniature:', err);
             setError('Failed to add miniature. Please try again later.');
@@ -110,7 +122,10 @@ export function Collection() {
     const handleDeleteMiniature = async (miniatureId: string) => {
         try {
             await collectionApi.deleteMiniature(miniatureId);
-            setMiniatures(miniatures.filter(m => m.id !== miniatureId));
+            setFolder(prev => prev ? {
+                ...prev,
+                miniatures: prev.miniatures.filter(m => m.id !== miniatureId)
+            } : null);
         } catch (err) {
             console.error('Failed to delete miniature:', err);
             setError('Failed to delete miniature. Please try again later.');
@@ -134,7 +149,7 @@ export function Collection() {
     const handleUpdateMiniature = async (miniatureId: string) => {
         // Only include changed fields in the payload
         const payload: Partial<Miniature> = {};
-        const currentMiniature = miniatures.find(m => m.id === miniatureId);
+        const currentMiniature = folder?.miniatures.find(m => m.id === miniatureId);
         
         if (!currentMiniature) return;
         
@@ -156,10 +171,13 @@ export function Collection() {
 
         try {
             const response = await collectionApi.updateMiniature(miniatureId, payload);
-            const oldMiniature = miniatures.find(m => m.id === miniatureId);
-            setMiniatures(miniatures.map(m => 
-                m.id === miniatureId ? response.data : m
-            ));
+            const oldMiniature = folder?.miniatures.find(m => m.id === miniatureId);
+            setFolder(prev => prev ? {
+                ...prev,
+                miniatures: prev.miniatures.map(m => 
+                    m.id === miniatureId ? response.data : m
+                )
+            } : null);
             setStatistics(prev => {
                 if (!prev) return null;
                 const folderIdForStats = response.data.folderId || folder?.id;
@@ -176,6 +194,28 @@ export function Collection() {
         } catch (err) {
             console.error('Failed to update miniature:', err);
             setError('Failed to update miniature. Please try again later.');
+        }
+    };
+
+    const handleImageUpload = async (miniatureId: string, files: FileList) => {
+        try {
+            const formData = new FormData();
+            Array.from(files).forEach((file, index) => {
+                formData.append(`images[${index}]`, file);
+            });
+
+            const response = await collectionApi.uploadImages(miniatureId, formData);
+            setFolder(prev => prev ? {
+                ...prev,
+                miniatures: prev.miniatures.map(m => 
+                    m.id === miniatureId ? response.data : m
+                )
+            } : null);
+            
+            console.log('Images uploaded successfully');
+        } catch (err) {
+            console.error('Failed to upload images:', err);
+            setError('Failed to upload images. Please try again later.');
         }
     };
 
@@ -245,7 +285,10 @@ export function Collection() {
             });
 
             // Remove moved miniatures from the current list
-            setMiniatures(miniatures.filter(m => !selectedMiniatures.includes(m.id)));
+            setFolder(prev => prev ? {
+                ...prev,
+                miniatures: prev.miniatures.filter(m => !selectedMiniatures.includes(m.id))
+            } : null);
             
             // Remove moved folders from the current list
             setFolder(prev => prev ? {
@@ -340,7 +383,7 @@ export function Collection() {
                                     >
                                         Add New Miniature
                                     </button>
-                                    {(miniatures.length > 0 || (folder?.folders && folder.folders.length > 0)) && !moveMode && (
+                                    {((folder?.miniatures && folder.miniatures.length > 0) || (folder?.folders && folder.folders.length > 0)) && !moveMode && (
                                         <button
                                             onClick={() => setMoveMode(true)}
                                             className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
@@ -399,7 +442,7 @@ export function Collection() {
                         </div>
 
                         <MiniaturesTable
-                            miniatures={miniatures}
+                            miniatures={folder?.miniatures || []}
                             moveMode={moveMode}
                             editingId={editingId}
                             editForm={editForm}
@@ -410,7 +453,28 @@ export function Collection() {
                             onCancelEdit={handleCancelEdit}
                             onSelectionToggle={toggleMiniatureSelection}
                             onEditFormChange={setEditForm}
+                            onImageUpload={handleImageUpload}
                         />
+
+                        {folder && (
+                            <Album
+                                pictures={getAllPicturesFromFolder(folder)}
+                                title={`${folder.name} Album`}
+                                onPictureDeleted={(pictureId: string) => {
+                                    // Remove the picture from the folder state
+                                    setFolder(prevFolder => {
+                                        if (!prevFolder) return prevFolder;
+                                        return {
+                                            ...prevFolder,
+                                            miniatures: prevFolder.miniatures.map(miniature => ({
+                                                ...miniature,
+                                                pictures: miniature.pictures.filter(picture => picture.id !== pictureId)
+                                            }))
+                                        };
+                                    });
+                                }}
+                            />
+                        )}
                     </>
                 )}
             </div>

@@ -6,8 +6,11 @@ use App\Collection\Folder\Folder;
 use App\Collection\Folder\FolderRepository;
 use App\Collection\Miniature\Miniature;
 use App\Collection\Miniature\MiniatureRepository;
+use App\Collection\Miniature\Picture\Picture;
 use App\Collection\Miniature\ProgressStatus;
 use App\Painter\Painter;
+use App\Service\S3UploadService;
+use App\Service\ImageResizeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -147,6 +150,7 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
+        // Handle regular JSON update
         $data = json_decode($request->getContent(), true);
 
         $status = ProgressStatus::tryFrom($data['status'] ?? '');
@@ -157,11 +161,59 @@ class CollectionController extends AbstractController
             $count = intval($strCount);
         }
 
-        $miniature->update($name, $count,$status);
+        $miniature->update($name, $count, $status);
 
         $entityManager->flush();
 
         return new JsonResponse($miniature->view(), Response::HTTP_OK);
+    }
+
+    #[Route('api/collections/miniatures/{miniature}/pictures', methods: 'POST')]
+    public function uploadPictures(
+        Miniature $miniature,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        S3UploadService $s3UploadService,
+        ImageResizeService $imageResizeService,
+    ): Response
+    {
+        if ($request->files->count() === 0) {
+            return new JsonResponse(['error' => 'No files uploaded'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $uploadedFiles = $request->files->get('images');
+        
+        if (!$uploadedFiles) {
+            return new JsonResponse(['error' => 'No images found in request'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $uploadedPictures = [];
+        $files = is_array($uploadedFiles) ? $uploadedFiles : [$uploadedFiles];
+
+        foreach ($files as $file) {
+            if ($file && $file->isValid()) {
+                $resizedFile = $imageResizeService->resizeImage($file);
+                
+                $path = $s3UploadService->generatePath($miniature->getId()->toString(), $resizedFile->getClientOriginalName());
+                
+                $uploadedPath = $s3UploadService->uploadFile($resizedFile, $path);
+                
+                $picture = new Picture(
+                    $miniature, 
+                    $uploadedPath, 
+                    $s3UploadService->getS3Endpoint(), 
+                    $s3UploadService->getS3Bucket()
+                );
+                $entityManager->persist($picture);
+                $miniature->addPicture($picture);
+                
+                $uploadedPictures[] = $picture->view();
+            }
+        }
+        
+        $entityManager->flush();
+        
+        return new JsonResponse($miniature->view(), Response::HTTP_CREATED);
     }
 
     #[Route('api/collections/miniatures', methods: 'PATCH')]
@@ -239,5 +291,27 @@ class CollectionController extends AbstractController
         $stats = $folderRepository->getStats($folder);
 
         return new JsonResponse($stats->view(), Response::HTTP_OK);
+    }
+
+    #[Route('api/collections/pictures/{picture}', methods: 'DELETE')]
+    public function deletePicture(
+        Picture $picture,
+        EntityManagerInterface $entityManager,
+        S3UploadService $s3UploadService,
+    ): Response
+    {
+        /** @var $user Painter */
+        $user = $this->getUser();
+        
+        if ($picture->getMiniature()->getPainter() !== $user) {
+            return new JsonResponse(['error' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
+        }
+        
+        $s3UploadService->deleteFile($picture->getPath());
+        
+        $entityManager->remove($picture);
+        $entityManager->flush();
+        
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }

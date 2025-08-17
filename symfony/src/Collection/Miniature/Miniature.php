@@ -3,7 +3,10 @@
 namespace App\Collection\Miniature;
 
 use App\Collection\Folder\Folder;
+use App\Collection\Miniature\Picture\Picture;
 use App\Painter\Painter;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -15,6 +18,9 @@ class Miniature
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $id;
+    
+    #[ORM\OneToMany(targetEntity: Picture::class, mappedBy: 'miniature', cascade: ['persist', 'remove'])]
+    private Collection $pictures;
     
     public function __construct(
         #[ORM\ManyToOne(targetEntity: Painter::class, inversedBy: 'miniatures')]
@@ -41,6 +47,17 @@ class Miniature
         private Folder $folder,
     ) {
         $this->id = Uuid::uuid4();
+        $this->pictures = new ArrayCollection();
+    }
+
+    public function getId(): UuidInterface
+    {
+        return $this->id;
+    }
+
+    public function getPainter(): Painter
+    {
+        return $this->painter;
     }
 
     public function setFolder(Folder $folder): void {
@@ -59,12 +76,25 @@ class Miniature
         }
     }
 
+    public function getPictures(): Collection
+    {
+        return $this->pictures;
+    }
+
+    public function addPicture(Picture $picture): void
+    {
+        if (!$this->pictures->contains($picture)) {
+            $this->pictures->add($picture);
+        }
+    }
+
     public function view(): array {
         return [
             'id' => $this->id,
             'name' => $this->name,
             'status' => $this->status,
             'count' => $this->count,
+            'pictures' => $this->pictures->map(fn(Picture $picture) => $picture->view())->toArray(),
         ];
     }
 }

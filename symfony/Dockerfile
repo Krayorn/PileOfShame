@@ -1,4 +1,4 @@
-FROM php:8.1.18-fpm-buster
+FROM php:8.2-fpm-bullseye	
 
 WORKDIR /var/www/html/symfony
 
@@ -8,9 +8,19 @@ RUN apt update \
         unzip \
         git \
         libpq-dev \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
     && apt clean -y && apt autoremove -y
 
-RUN docker-php-ext-install pdo pdo_pgsql
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql gd
+
+# Configure PHP upload limits
+RUN echo "upload_max_filesize = 10M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 10M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_file_uploads = 20" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # install Composer
 RUN export COMPOSER_VERSION=2.3.10 \
