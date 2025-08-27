@@ -10,6 +10,7 @@ services:
       target: prod
     volumes:
       - ./symfony/var/data.db:/var/www/html/symfony/var/data.db
+      - ./symfony/var/jwt:/var/www/html/symfony/var/jwt 
     ports:
       - "9000:9000"
     environment:
