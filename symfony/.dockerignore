@@ -1,0 +1,14 @@
+vendor/
+var/cache/*
+var/log/*
+var/database.sqlite
+.git
+.gitignore
+README.md
+.env.local
+.env.test
+.DS_Store
+*.log
+coverage/
+tests/
+docs/

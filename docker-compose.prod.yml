@@ -7,25 +7,28 @@ services:
   symfony:
     build:
       context: ./symfony
-      target: dev
+      target: prod
     volumes:
-      - .:/var/www/html
+      - ./symfony/var/data.db:/var/www/html/symfony/var/data.db
     ports:
       - "9000:9000"
     environment:
-      APP_ENV: dev
-      APP_DEBUG: 1
+      APP_ENV: prod
+      APP_DEBUG: 0
+    restart: unless-stopped
 
   nginx:
     build:
       context: .
       dockerfile: nginx/Dockerfile
-      target: dev
-    volumes:
-      - ./react/dist/:/usr/share/nginx/html
+      target: prod
     ports:
-      - "82:80"
+      - "80:80"
+      - "443:443"
     environment:
       HOSTNAME_INTERNAL_PHP: symfony:9000
       HOSTNAME_PUBLIC_BACKEND: localhost:9000
       HOSTNAME_INTERNAL_NGINX: nginx
+    depends_on:
+      - symfony
+    restart: unless-stopped
