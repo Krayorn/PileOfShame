@@ -23,7 +23,7 @@ FROM base as prod
 RUN mkdir -p /var/log/nginx
 
 # Copy built React files
-COPY ../react/dist /usr/share/nginx/html
+COPY /react/dist /usr/share/nginx/html
 
 # Set proper permissions
 RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx /usr/share/nginx/html
