@@ -150,7 +150,6 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
-        // Handle regular JSON update
         $data = json_decode($request->getContent(), true);
 
         $status = ProgressStatus::tryFrom($data['status'] ?? '');
