@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Auth } from './components/Auth'
-import { Collection } from './components/Collection'
+import { Auth } from './pages/Auth'
+import { Collection } from './pages/Collection'
 import './index.css'
 
 import {

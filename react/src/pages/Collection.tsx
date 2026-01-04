@@ -3,13 +3,15 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import type { Miniature, MiniatureStatus, Picture } from '../types/miniature';
 import { Folder } from '../types/folder';
 import type { CollectionStatistics, FolderStatistics } from '../types/statistics';
-import { MiniaturesTable } from './MiniaturesTable';
-import { AddMiniatureForm } from './AddMiniatureForm';
-import { AddFolderForm } from './AddFolderForm';
-import { FolderItem } from './FolderItem';
-import { MoveControls } from './MoveControls';
-import { Album } from './Album';
+import { MiniaturesTable } from '../components/MiniaturesTable';
+import { AddMiniatureForm } from '../components/AddMiniatureForm';
+import { AddFolderForm } from '../components/AddFolderForm';
+import { FolderItem } from '../components/FolderItem';
+import { MoveControls } from '../components/MoveControls';
+import { Album } from '../components/Album';
 import { collectionApi } from '../api';
+import { useTypewriter } from '../hooks/useTypewriter';
+import { useCounter } from '../hooks/useCounter';
 
 export function Collection() {
     const { folderId } = useParams();
@@ -323,6 +325,30 @@ export function Collection() {
         );
     };
 
+    // Typewriter effect for folder name
+    const folderName = folder?.name || 'My Collection';
+    const typedFolderName = useTypewriter(folderName, {
+        speed: 40,
+        delay: 20,
+        restartOnChange: true
+    });
+
+    // Counter animations for statistics
+    const currentStats = statistics && folder?.id ? statistics[folder.id] : null;
+    const paintedPercentage = currentStats ? calculatePaintedPercentage(currentStats) : 0;
+    const totalMiniatures = currentStats ? calculateTotalMiniatures(currentStats) : 0;
+    
+    const animatedPercentage = useCounter(paintedPercentage, {
+        duration: 800,
+        delay: folderName.length * 40,
+        restartOnChange: true
+    });
+    
+    const animatedTotal = useCounter(totalMiniatures, {
+        duration: 1000,
+        delay: folderName.length * 40,
+        restartOnChange: true
+    });
 
 
     return (
@@ -332,10 +358,15 @@ export function Collection() {
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h1 className="text-3xl font-bold uppercase tracking-wider flex items-center text-terminal-fg">
-                            {folder?.name || 'My Collection'}
+                            <span>
+                                {typedFolderName}
+                                {typedFolderName.length < folderName.length && (
+                                    <span className="animate-pulse text-terminal-accent">_</span>
+                                )}
+                            </span>
                             {statistics && folder?.id && statistics[folder.id] && (
-                                <span className="ml-4 text-lg font-normal text-terminal-fgDim">
-                                ({calculatePaintedPercentage(statistics[folder.id])}% painted - {calculateTotalMiniatures(statistics[folder.id])} miniatures)
+                                <span className="ml-4 text-lg text-terminal-fgDim">
+                                ({animatedPercentage}% painted - {animatedTotal} miniatures)
                             </span>
                             )}
                         </h1>
@@ -482,4 +513,5 @@ export function Collection() {
             </div>
         </div>
     );
-} 
+}
+

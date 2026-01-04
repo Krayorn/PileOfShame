@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -39,46 +37,29 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Terminal colors for Tailwind classes - these match the nested structure in tailwind.config.js */
+  --color-terminal-bg: #0a0f0a;
+  --color-terminal-bg-light: #0f1a0f;
+  --color-terminal-bgLight: #0f1a0f;
+  --color-terminal-fg: #00ff41;
+  --color-terminal-fg-dim: #00cc33;
+  --color-terminal-fgDim: #00cc33;
+  --color-terminal-accent: #aaff00;
+  --color-terminal-border: #00ff41;
+  --color-terminal-border-dim: #00cc33;
+  --color-terminal-borderDim: #00cc33;
+  --color-terminal-warning: #ffaa00;
+  --color-terminal-destructive: #ff3333;
+  --color-terminal-painted: #00ff41;
+  --color-terminal-built: #ffaa00;
+  --color-terminal-gray: #888888;
+  --color-warhammer-blue: #0066cc;
 }
 
 :root {
   --radius: 0.25rem;
   /* Warhammer Terminal Theme - Dark green/black with green accents */
-  --background: #0a0f0a;
-  --foreground: #00ff41;
-  --card: #0f1a0f;
-  --card-foreground: #00ff41;
-  --popover: #0f1a0f;
-  --popover-foreground: #00ff41;
-  --primary: #00ff41;
-  --primary-foreground: #0a0f0a;
-  --secondary: #0f1a0f;
-  --secondary-foreground: #00cc33;
-  --muted: #0f1a0f;
-  --muted-foreground: #00cc33;
-  --accent: #aaff00;
-  --accent-foreground: #0a0f0a;
-  --destructive: #ff3333;
-  --border: #00ff41;
-  --input: #0f1a0f;
-  --ring: #00ff41;
-  --chart-1: #00ff41;
-  --chart-2: #aaff00;
-  --chart-3: #ffaa00;
-  --chart-4: #ff3333;
-  --chart-5: #00cc33;
-  --sidebar: #0a0f0a;
-  --sidebar-foreground: #00ff41;
-  --sidebar-primary: #00ff41;
-  --sidebar-primary-foreground: #0a0f0a;
-  --sidebar-accent: #0f1a0f;
-  --sidebar-accent-foreground: #00ff41;
-  --sidebar-border: #00ff41;
-  --sidebar-ring: #00ff41;
-}
-
-.dark {
-  /* Same as root - we're always in dark terminal mode */
   --background: #0a0f0a;
   --foreground: #00ff41;
   --card: #0f1a0f;
@@ -119,7 +100,7 @@
   html, body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: 'Rajdhani', 'Orbitron', system-ui, sans-serif;
+    font-family: 'Orbitron', system-ui, sans-serif;
     letter-spacing: 0.025em;
     margin: 0;
     padding: 12px;
@@ -131,7 +112,6 @@
     box-shadow: 0 0 20px rgba(0, 255, 65, 0.2) inset;
   }
   #root {
-    min-height: 100vh;
     margin: 0;
     padding: 0;
   }
