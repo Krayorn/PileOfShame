@@ -90,29 +90,29 @@ export function FolderItem({
 
     if (moveMode) {
         return (
-            <div className="p-4 bg-white rounded-lg shadow">
+            <div className="p-4 bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal">
                 <div className="flex items-center">
                     <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => onSelectionToggle(folder.id)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+                        className="h-4 w-4 text-terminal-fg focus:ring-terminal-border border-terminal-border rounded mr-2 bg-terminal-bg"
                     />
-                    <svg className="w-6 h-6 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-terminal-fg mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                     </svg>
-                    <span className="text-gray-700 font-medium">{folder.name}</span>
+                    <span className="text-terminal-fg font-semibold uppercase tracking-wider">{folder.name}</span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+        <div className="p-4 bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal hover:shadow-terminal-glow transition-all">
             <div className="flex items-center justify-between">
                 {isEditing ? (
                     <div className="flex items-center flex-grow">
-                        <svg className="w-6 h-6 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-terminal-fg mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
                         <input
@@ -121,7 +121,7 @@ export function FolderItem({
                             onChange={(e) => setEditName(e.target.value)}
                             onKeyDown={handleKeyPress}
                             onBlur={handleSaveEdit}
-                            className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
                             autoFocus
                             disabled={isUpdating}
                         />
@@ -129,14 +129,14 @@ export function FolderItem({
                             <button
                                 onClick={handleSaveEdit}
                                 disabled={isUpdating}
-                                className="px-2 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                                className="px-2 py-1 text-sm border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow disabled:opacity-50"
                             >
                                 {isUpdating ? 'Saving...' : 'Save'}
                             </button>
                             <button
                                 onClick={handleCancelEdit}
                                 disabled={isUpdating}
-                                className="px-2 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                                className="px-2 py-1 text-sm border border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow disabled:opacity-50"
                             >
                                 Cancel
                             </button>
@@ -146,14 +146,14 @@ export function FolderItem({
                     <>
                         <Link
                             to={`/collection/${folder.id}`}
-                            className="flex items-center flex-grow"
+                            className="flex items-center flex-grow hover:text-terminal-accent transition-colors"
                         >
-                            <svg className="w-6 h-6 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-6 h-6 text-terminal-fg mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                             </svg>
-                            <span className="text-gray-700 font-medium">{folder.name}</span>
+                            <span className="text-terminal-fg font-semibold uppercase tracking-wider">{folder.name}</span>
                             {statistics && (
-                                <span className="ml-2 text-sm text-gray-500">
+                                <span className="ml-2 text-sm text-terminal-fgDim">
                                     ({calculatePaintedPercentage(statistics)}% painted - {calculateTotalMiniatures(statistics)} miniatures)
                                 </span>
                             )}
@@ -161,7 +161,7 @@ export function FolderItem({
                         <div className="flex items-center space-x-2">
                             <button
                                 onClick={handleEdit}
-                                className="text-blue-600 hover:text-blue-800"
+                                className="text-terminal-fg hover:text-terminal-accent transition-colors"
                                 title="Edit folder name"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,7 +169,7 @@ export function FolderItem({
                                 </svg>
                             </button>
                             <AlertDialog>
-                                <AlertDialogTrigger className="text-red-600 hover:text-red-800">
+                                <AlertDialogTrigger className="text-terminal-destructive hover:text-terminal-destructive/80 transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -183,7 +183,7 @@ export function FolderItem({
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                                        <AlertDialogAction onClick={handleDelete} className="border-terminal-destructive text-terminal-destructive hover:bg-terminal-bgLight">
                                             Delete
                                         </AlertDialogAction>
                                     </AlertDialogFooter>

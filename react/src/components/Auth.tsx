@@ -49,14 +49,14 @@ export function Auth() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
-                <h2 className="text-center text-3xl font-bold">
+        <div className="min-h-screen flex items-center justify-center bg-terminal-bg p-4">
+            <div className="max-w-md w-full space-y-8 p-8 bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal-glow">
+                <h2 className="text-center text-3xl font-bold uppercase tracking-wider text-terminal-fg">
                     {mode === 'login' ? 'Sign In' : 'Register'}
                 </h2>
                 
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <div className="bg-terminal-bg border border-terminal-destructive text-terminal-destructive px-4 py-3 rounded-sm shadow-terminal">
                         {error}
                     </div>
                 )}
@@ -64,41 +64,41 @@ export function Auth() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="username" className="block text-sm font-semibold uppercase tracking-wider text-terminal-fg mb-2">
                                 Username
                             </label>
                             <input
                                 id="username"
                                 type="text"
                                 required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                                className="mt-1 block w-full px-3 py-2 bg-terminal-bg border border-terminal-border text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
                         </div>
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="password" className="block text-sm font-semibold uppercase tracking-wider text-terminal-fg mb-2">
                                 Password
                             </label>
                             <input
                                 id="password"
                                 type="password"
                                 required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                                className="mt-1 block w-full px-3 py-2 bg-terminal-bg border border-terminal-border text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
                         {mode === 'register' && (
                             <div>
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="confirmPassword" className="block text-sm font-semibold uppercase tracking-wider text-terminal-fg mb-2">
                                     Confirm Password
                                 </label>
                                 <input
                                     id="confirmPassword"
                                     type="password"
                                     required
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    className="mt-1 block w-full px-3 py-2 bg-terminal-bg border border-terminal-border text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                 />
@@ -108,7 +108,7 @@ export function Auth() {
 
                     <button
                         type="submit"
-                        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                        className="w-full py-2 px-4 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
                     >
                         {mode === 'login' ? 'Sign In' : 'Register'}
                     </button>
@@ -116,7 +116,7 @@ export function Auth() {
 
                 <div className="text-center mt-4">
                     <button
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-terminal-fg hover:text-terminal-accent transition-colors uppercase tracking-wider text-sm font-semibold"
                         onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
                     >
                         {mode === 'login' 

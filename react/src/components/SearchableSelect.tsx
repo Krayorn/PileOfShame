@@ -88,13 +88,13 @@ export function SearchableSelect({
                 onFocus={handleInputFocus}
                 onClick={handleInputClick}
                 placeholder={placeholder}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal placeholder:text-terminal-fgDim"
             />
             
             {isOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                <div className="absolute z-10 w-full mt-1 bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal-glow max-h-60 overflow-auto">
                     {filteredOptions.length === 0 ? (
-                        <div className="px-3 py-2 text-gray-500 text-sm">
+                        <div className="px-3 py-2 text-terminal-fgDim text-sm uppercase tracking-wider">
                             No options found
                         </div>
                     ) : (
@@ -102,7 +102,7 @@ export function SearchableSelect({
                             <div
                                 key={option.id}
                                 onClick={() => handleOptionSelect(option)}
-                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                className="px-3 py-2 hover:bg-terminal-bg cursor-pointer text-sm text-terminal-fg font-semibold uppercase tracking-wider transition-colors"
                             >
                                 {option.name}
                             </div>

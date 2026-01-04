@@ -33,8 +33,8 @@ export function MiniaturesTable({
 }: MiniaturesTableProps) {
     if (miniatures.length === 0) {
         return (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="p-6 text-center text-gray-500">
+            <div className="bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal overflow-hidden">
+                <div className="p-6 text-center text-terminal-fgDim uppercase tracking-wider">
                     No miniatures in this folder yet. Add some using the button above!
                 </div>
             </div>
@@ -42,30 +42,30 @@ export function MiniaturesTable({
     }
 
     return (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+        <div className="bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal overflow-hidden">
+            <table className="min-w-full divide-y divide-terminal-border">
+                <thead className="bg-terminal-bg">
                     <tr>
                         {moveMode && (
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-bold text-terminal-fg uppercase tracking-wider border-b border-terminal-border">
                                 Select
                             </th>
                         )}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-terminal-fg uppercase tracking-wider border-b border-terminal-border">
                             Name
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-terminal-fg uppercase tracking-wider border-b border-terminal-border">
                             Count
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-terminal-fg uppercase tracking-wider border-b border-terminal-border">
                             Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-terminal-fg uppercase tracking-wider border-b border-terminal-border">
                             Actions
                         </th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-terminal-bgLight divide-y divide-terminal-border">
                     {miniatures.map((miniature) => (
                         <MiniatureRow
                             key={miniature.id}

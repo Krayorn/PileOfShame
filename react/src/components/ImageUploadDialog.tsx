@@ -64,7 +64,7 @@ export function ImageUploadDialog({ miniatureId, onUpload }: ImageUploadDialogPr
         </DialogDescription>
         <div className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="image-upload" className="text-sm font-medium">
+            <label htmlFor="image-upload" className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">
               Select Images
             </label>
             <input
@@ -73,16 +73,16 @@ export function ImageUploadDialog({ miniatureId, onUpload }: ImageUploadDialogPr
               multiple
               accept="image/*"
               onChange={handleFileSelect}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal file:mr-4 file:py-1 file:px-2 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:uppercase file:tracking-wider file:bg-terminal-bgLight file:text-terminal-fg file:border file:border-terminal-border file:cursor-pointer hover:file:bg-terminal-bg"
             />
           </div>
           {selectedFiles && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Selected Files:</label>
-              <div className="max-h-32 overflow-y-auto space-y-1">
+              <label className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">Selected Files:</label>
+              <div className="max-h-32 overflow-y-auto space-y-1 border border-terminal-border rounded-sm p-2 bg-terminal-bg">
                 {Array.from(selectedFiles).map((file, index) => (
-                  <div key={index} className="flex items-center justify-between text-sm text-gray-600">
-                    <span>{file.name}</span>
+                  <div key={index} className="flex items-center justify-between text-sm text-terminal-fgDim">
+                    <span className="font-semibold">{file.name}</span>
                     <span className="text-xs">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
                   </div>
                 ))}

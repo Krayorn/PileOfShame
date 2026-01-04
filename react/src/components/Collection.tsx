@@ -326,14 +326,15 @@ export function Collection() {
 
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-screen bg-terminal-bg p-4">
+            <div className="p-4">
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold flex items-center">
+                        <h1 className="text-3xl font-bold uppercase tracking-wider flex items-center text-terminal-fg">
                             {folder?.name || 'My Collection'}
                             {statistics && folder?.id && statistics[folder.id] && (
-                                <span className="ml-4 text-lg font-normal text-gray-600">
+                                <span className="ml-4 text-lg font-normal text-terminal-fgDim">
                                 ({calculatePaintedPercentage(statistics[folder.id])}% painted - {calculateTotalMiniatures(statistics[folder.id])} miniatures)
                             </span>
                             )}
@@ -341,7 +342,7 @@ export function Collection() {
                         {folderId && folder?.parent?.id && (
                             <Link 
                                 to={`/collection/${folder.parent.id}`} 
-                                className="text-blue-600 hover:text-blue-800 text-sm"
+                                className="text-terminal-fg hover:text-terminal-accent text-sm uppercase tracking-wider font-semibold transition-colors"
                             >
                                 ← Back to {folder.parent.name}
                             </Link>
@@ -349,22 +350,22 @@ export function Collection() {
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        className="px-4 py-2 border border-terminal-destructive bg-terminal-bg text-terminal-destructive font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
                     >
                         Logout
                     </button>
                 </div>
 
                 {error && (
-                    <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <div className="mb-4 bg-terminal-bg border border-terminal-destructive text-terminal-destructive px-4 py-3 rounded-sm shadow-terminal">
                         {error}
                     </div>
                 )}
 
                 {loading ? (
                     <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="mt-2 text-gray-600">Loading collection...</p>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terminal-fg border-t-transparent mx-auto"></div>
+                        <p className="mt-2 text-terminal-fgDim uppercase tracking-wider">Loading collection...</p>
                     </div>
                 ) : (
                     <>
@@ -373,20 +374,20 @@ export function Collection() {
                                 <div className="flex space-x-4">
                                     <button
                                         onClick={() => setShowAddFolderForm(true)}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                        className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
                                     >
                                         Add New Folder
                                     </button>
                                     <button
                                         onClick={() => setShowAddForm(true)}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                        className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
                                     >
                                         Add New Miniature
                                     </button>
                                     {((folder?.miniatures && folder.miniatures.length > 0) || (folder?.folders && folder.folders.length > 0)) && !moveMode && (
                                         <button
                                             onClick={() => setMoveMode(true)}
-                                            className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                                            className="px-4 py-2 border border-terminal-warning bg-terminal-bg text-terminal-warning font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
                                         >
                                             Move Items
                                         </button>
@@ -477,6 +478,7 @@ export function Collection() {
                         )}
                     </>
                 )}
+            </div>
             </div>
         </div>
     );
