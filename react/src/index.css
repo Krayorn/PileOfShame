@@ -39,22 +39,21 @@
   --color-sidebar-ring: var(--sidebar-ring);
   
   /* Terminal colors for Tailwind classes - these match the nested structure in tailwind.config.js */
-  --color-terminal-bg: #0a0f0a;
-  --color-terminal-bg-light: #0f1a0f;
-  --color-terminal-bgLight: #0f1a0f;
-  --color-terminal-fg: #00ff41;
-  --color-terminal-fg-dim: #00cc33;
-  --color-terminal-fgDim: #00cc33;
-  --color-terminal-accent: #aaff00;
-  --color-terminal-border: #00ff41;
-  --color-terminal-border-dim: #00cc33;
-  --color-terminal-borderDim: #00cc33;
-  --color-terminal-warning: #ffaa00;
-  --color-terminal-destructive: #ff3333;
-  --color-terminal-painted: #00ff41;
-  --color-terminal-built: #ffaa00;
-  --color-terminal-gray: #888888;
-  --color-warhammer-blue: #0066cc;
+  --color-terminal-bg: var(--background);
+  --color-terminal-bg-light: var(--card);
+  --color-terminal-bgLight: var(--card);
+  --color-terminal-fg: var(--foreground);
+  --color-terminal-fg-dim: var(--muted-foreground);
+  --color-terminal-fgDim: var(--muted-foreground);
+  --color-terminal-accent: var(--accent);
+  --color-terminal-border: var(--muted-foreground);
+  --color-terminal-border-dim: var(--muted-foreground);
+  --color-terminal-borderDim: var(--muted-foreground);
+  --color-terminal-warning: var(--chart-3);
+  --color-terminal-destructive: var(--destructive);
+  --color-terminal-painted: var(--foreground);
+  --color-terminal-built: var(--chart-3);
+  --color-terminal-gray: var(--muted-foreground);
 }
 
 :root {
@@ -108,7 +107,7 @@
     overflow: scroll;
   }
   body {
-    border: 2px solid #00ff41;
+    border: 2px solid var(--muted-foreground);
     box-shadow: 0 0 20px rgba(0, 255, 65, 0.2) inset;
   }
   #root {

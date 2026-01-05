@@ -339,13 +339,13 @@ export function Collection() {
     const totalMiniatures = currentStats ? calculateTotalMiniatures(currentStats) : 0;
     
     const animatedPercentage = useCounter(paintedPercentage, {
-        duration: 800,
+        duration: 600,
         delay: folderName.length * 40,
         restartOnChange: true
     });
     
     const animatedTotal = useCounter(totalMiniatures, {
-        duration: 1000,
+        duration: 800,
         delay: folderName.length * 40,
         restartOnChange: true
     });
@@ -381,14 +381,14 @@ export function Collection() {
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="px-4 py-2 border border-terminal-destructive bg-terminal-bg text-terminal-destructive font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
+                        className="px-4 py-2 border border-terminal-destructive bg-terminal-bg text-terminal-destructive font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all"
                     >
                         Logout
                     </button>
                 </div>
 
                 {error && (
-                    <div className="mb-4 bg-terminal-bg border border-terminal-destructive text-terminal-destructive px-4 py-3 rounded-sm shadow-terminal">
+                    <div className="mb-4 bg-terminal-bg border border-terminal-destructive text-terminal-destructive px-4 py-3 rounded-sm">
                         {error}
                     </div>
                 )}
@@ -405,20 +405,20 @@ export function Collection() {
                                 <div className="flex space-x-4">
                                     <button
                                         onClick={() => setShowAddFolderForm(true)}
-                                        className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
+                                        className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all"
                                     >
                                         Add New Folder
                                     </button>
                                     <button
                                         onClick={() => setShowAddForm(true)}
-                                        className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
+                                        className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all"
                                     >
                                         Add New Miniature
                                     </button>
                                     {((folder?.miniatures && folder.miniatures.length > 0) || (folder?.folders && folder.folders.length > 0)) && !moveMode && (
                                         <button
                                             onClick={() => setMoveMode(true)}
-                                            className="px-4 py-2 border border-terminal-warning bg-terminal-bg text-terminal-warning font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
+                                            className="px-4 py-2 border border-terminal-warning bg-terminal-bg text-terminal-warning font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all"
                                         >
                                             Move Items
                                         </button>

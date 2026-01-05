@@ -73,7 +73,7 @@ export function ImageUploadDialog({ miniatureId, onUpload }: ImageUploadDialogPr
               multiple
               accept="image/*"
               onChange={handleFileSelect}
-              className="w-full px-3 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal file:mr-4 file:py-1 file:px-2 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:uppercase file:tracking-wider file:bg-terminal-bgLight file:text-terminal-fg file:border file:border-terminal-border file:cursor-pointer hover:file:bg-terminal-bg"
+              className="w-full px-3 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border file:mr-4 file:py-1 file:px-2 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:uppercase file:tracking-wider file:bg-terminal-bgLight file:text-terminal-fg file:border file:border-terminal-border file:cursor-pointer hover:file:bg-terminal-bg"
             />
           </div>
           {selectedFiles && (

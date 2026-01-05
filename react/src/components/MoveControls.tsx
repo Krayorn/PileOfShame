@@ -29,13 +29,13 @@ export function MoveControls({
             <button
                 onClick={onMove}
                 disabled={!targetFolderId || selectedCount === 0}
-                className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
                 Move Selected ({selectedCount})
             </button>
             <button
                 onClick={onCancel}
-                className="px-4 py-2 border border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all"
+                className="px-4 py-2 border border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all"
             >
                 Cancel
             </button>

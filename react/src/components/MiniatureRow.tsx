@@ -67,7 +67,7 @@ export function MiniatureRow({
                         value={editForm.name || ''}
                         onChange={(e) => onEditFormChange({ ...editForm, name: e.target.value })}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
+                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border"
                     />
                 ) : (
                     miniature.name
@@ -81,7 +81,7 @@ export function MiniatureRow({
                         value={editForm.count || ''}
                         onChange={(e) => onEditFormChange({ ...editForm, count: parseInt(e.target.value) })}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
+                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border"
                     />
                 ) : (
                     miniature.count
@@ -93,7 +93,7 @@ export function MiniatureRow({
                         value={editForm.status}
                         onChange={(e) => onEditFormChange({ ...editForm, status: e.target.value as MiniatureStatus })}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
+                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border"
                     >
                         <option value="Gray">Gray</option>
                         <option value="Built">Built</option>

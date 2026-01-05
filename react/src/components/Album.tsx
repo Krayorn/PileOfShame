@@ -69,7 +69,7 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
                     const isDeleting = deletingPictures.has(picture.id);
                     
                     return (
-                        <div key={picture.id} className="relative group border border-terminal-border rounded-sm overflow-hidden shadow-terminal hover:shadow-terminal-glow transition-all">
+                        <div key={picture.id} className="relative group border border-terminal-border rounded-sm overflow-hidden transition-all">
                             <img
                                 src={imageUrl}
                                 alt="Miniature"
@@ -78,7 +78,7 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
                             <button
                                 onClick={() => setPictureToDelete(picture.id)}
                                 disabled={isDeleting}
-                                className="absolute top-2 right-2 bg-terminal-bg border border-terminal-destructive text-terminal-destructive rounded-sm p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-50 shadow-terminal hover:shadow-terminal-glow"
+                                className="absolute top-2 right-2 bg-terminal-bg border border-terminal-destructive text-terminal-destructive rounded-sm p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-50-glow"
                                 title="Delete image"
                             >
                                 {isDeleting ? (

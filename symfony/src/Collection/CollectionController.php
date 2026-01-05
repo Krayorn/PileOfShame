@@ -39,7 +39,11 @@ class CollectionController extends AbstractController
         if ($folderId === null) {
             return new JsonResponse(['error' => 'Folder ID is required.'], Response::HTTP_BAD_REQUEST);
         }
-        $folder = $folderRepository->find($folderId);
+        $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+
+        if ($folder === null) {
+            return new JsonResponse(['error' => 'Folder not found.'], Response::HTTP_NOT_FOUND);
+        }
 
         if ($status === null) {
             $status = ProgressStatus::Gray;
@@ -69,7 +73,11 @@ class CollectionController extends AbstractController
         if ($folderId === null) {
             return new JsonResponse(['error' => 'Parent folder ID is required.'], Response::HTTP_BAD_REQUEST);
         }
-        $folder = $folderRepository->find($folderId);
+        $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+
+        if ($folder === null) {
+            return new JsonResponse(['error' => 'Folder not found.'], Response::HTTP_NOT_FOUND);
+        }
 
         $folder = new Folder($user, $folder, $name);
         $entityManager->persist($folder);
@@ -84,8 +92,12 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
-        /** @var $user Painter */
         $user = $this->getUser();
+
+        if ($folder->getPainter() !== $user) {
+            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+
         $entityManager->remove($folder);
         $entityManager->flush();
 
@@ -102,7 +114,6 @@ class CollectionController extends AbstractController
         /** @var $user Painter */
         $user = $this->getUser();
         
-        // Ensure user can only update their own folders
         if ($folder->getPainter() !== $user) {
             return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
         }
@@ -137,6 +148,14 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
+
+        /** @var $user Painter */
+        $user = $this->getUser();
+
+        if ($miniature->getPainter() !== $user) {
+            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+
         $entityManager->remove($miniature);
         $entityManager->flush();
 
@@ -150,6 +169,13 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
+        /** @var $user Painter */
+        $user = $this->getUser();
+        
+        if ($miniature->getPainter() !== $user) {
+            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+
         $data = json_decode($request->getContent(), true);
 
         $status = ProgressStatus::tryFrom($data['status'] ?? '');
@@ -176,6 +202,13 @@ class CollectionController extends AbstractController
         ImageResizeService $imageResizeService,
     ): Response
     {
+        /** @var $user Painter */
+        $user = $this->getUser();
+        
+        if ($miniature->getPainter() !== $user) {
+            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+
         if ($request->files->count() === 0) {
             return new JsonResponse(['error' => 'No files uploaded'], Response::HTTP_BAD_REQUEST);
         }

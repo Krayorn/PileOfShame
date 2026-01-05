@@ -39,7 +39,7 @@ export function AddFolderForm({ onSubmit, onCancel }: AddFolderFormProps) {
                                 required
                                 value={folderName}
                                 onChange={(e) => setFolderName(e.target.value)}
-                                className="flex-1 px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent focus:shadow-terminal transition-all font-mono"
+                                className="flex-1 px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
                                 placeholder="ENTER_FOLDER_NAME"
                                 autoFocus
                             />
@@ -50,14 +50,14 @@ export function AddFolderForm({ onSubmit, onCancel }: AddFolderFormProps) {
                         <div className="flex space-x-3">
                             <button
                                 type="submit"
-                                className="px-4 py-2 border-l-4 border-terminal-border bg-terminal-bg text-terminal-fg font-bold uppercase tracking-widest hover:border-terminal-accent hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all text-sm"
+                                className="px-4 py-2 border-l-4 border-terminal-border bg-terminal-bg text-terminal-fg font-bold uppercase tracking-widest hover:border-terminal-accent hover:bg-terminal-bgLight transition-all text-sm"
                             >
                                 → EXECUTE
                             </button>
                             <button
                                 type="button"
                                 onClick={onCancel}
-                                className="px-4 py-2 border-l-4 border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-bold uppercase tracking-widest hover:border-terminal-fg hover:text-terminal-fg hover:shadow-terminal transition-all text-sm"
+                                className="px-4 py-2 border-l-4 border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-bold uppercase tracking-widest hover:border-terminal-fg hover:text-terminal-fg transition-all text-sm"
                             >
                                 → ABORT
                             </button>

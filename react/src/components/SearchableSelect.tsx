@@ -88,11 +88,11 @@ export function SearchableSelect({
                 onFocus={handleInputFocus}
                 onClick={handleInputClick}
                 placeholder={placeholder}
-                className="w-full px-3 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal placeholder:text-terminal-fgDim"
+                className="w-full px-3 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border placeholder:text-terminal-fgDim"
             />
             
             {isOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal-glow max-h-60 overflow-auto">
+                <div className="absolute z-10 w-full mt-1 bg-terminal-bgLight border border-terminal-border rounded-sm max-h-60 overflow-auto">
                     {filteredOptions.length === 0 ? (
                         <div className="px-3 py-2 text-terminal-fgDim text-sm uppercase tracking-wider">
                             No options found

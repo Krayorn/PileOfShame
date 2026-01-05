@@ -90,7 +90,7 @@ export function FolderItem({
 
     if (moveMode) {
         return (
-            <div className="p-4 bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal">
+            <div className="p-4 bg-terminal-bgLight border border-terminal-border rounded-sm">
                 <div className="flex items-center">
                     <input
                         type="checkbox"
@@ -108,7 +108,7 @@ export function FolderItem({
     }
 
     return (
-        <div className="p-4 bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal hover:shadow-terminal-glow transition-all">
+        <div className="p-4 bg-terminal-bgLight border border-terminal-border rounded-sm transition-all">
             <div className="flex items-center justify-between">
                 {isEditing ? (
                     <div className="flex items-center flex-grow">
@@ -121,7 +121,7 @@ export function FolderItem({
                             onChange={(e) => setEditName(e.target.value)}
                             onKeyDown={handleKeyPress}
                             onBlur={handleSaveEdit}
-                            className="flex-1 px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border focus:shadow-terminal"
+                            className="flex-1 px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border"
                             autoFocus
                             disabled={isUpdating}
                         />
@@ -129,14 +129,14 @@ export function FolderItem({
                             <button
                                 onClick={handleSaveEdit}
                                 disabled={isUpdating}
-                                className="px-2 py-1 text-sm border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow disabled:opacity-50"
+                                className="px-2 py-1 text-sm border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm disabled:opacity-50"
                             >
                                 {isUpdating ? 'Saving...' : 'Save'}
                             </button>
                             <button
                                 onClick={handleCancelEdit}
                                 disabled={isUpdating}
-                                className="px-2 py-1 text-sm border border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-semibold uppercase tracking-wider rounded-sm shadow-terminal hover:shadow-terminal-glow disabled:opacity-50"
+                                className="px-2 py-1 text-sm border border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-semibold uppercase tracking-wider rounded-sm disabled:opacity-50"
                             >
                                 Cancel
                             </button>

@@ -10,13 +10,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-terminal-bg border border-terminal-border text-terminal-fg shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight",
+          "bg-terminal-bg border border-terminal-border text-terminal-fg hover:bg-terminal-bgLight",
         destructive:
-          "bg-terminal-bg border border-terminal-destructive text-terminal-destructive shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight focus-visible:ring-terminal-destructive/50",
+          "bg-terminal-bg border border-terminal-destructive text-terminal-destructive hover:bg-terminal-bgLight focus-visible:ring-terminal-destructive/50",
         outline:
-          "border border-terminal-border bg-terminal-bg text-terminal-fg shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bgLight hover:border-terminal-accent",
+          "border border-terminal-border bg-terminal-bg text-terminal-fg hover:bg-terminal-bgLight hover:border-terminal-accent",
         secondary:
-          "bg-terminal-bgLight border border-terminal-borderDim text-terminal-fgDim shadow-terminal hover:shadow-terminal-glow hover:bg-terminal-bg",
+          "bg-terminal-bgLight border border-terminal-borderDim text-terminal-fgDim hover:bg-terminal-bg",
         ghost:
           "hover:bg-terminal-bgLight hover:text-terminal-fg border border-transparent",
         link: "text-terminal-fg underline-offset-4 hover:underline hover:text-terminal-accent",

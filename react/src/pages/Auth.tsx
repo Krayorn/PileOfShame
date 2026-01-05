@@ -76,7 +76,7 @@ export function Auth() {
                                     id="username"
                                     type="text"
                                     required
-                                    className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent focus:shadow-terminal transition-all font-mono"
+                                    className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
@@ -89,7 +89,7 @@ export function Auth() {
                                     id="password"
                                     type="password"
                                     required
-                                    className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent focus:shadow-terminal transition-all font-mono"
+                                    className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -103,7 +103,7 @@ export function Auth() {
                                         id="confirmPassword"
                                         type="password"
                                         required
-                                        className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent focus:shadow-terminal transition-all font-mono"
+                                        className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                     />
@@ -114,7 +114,7 @@ export function Auth() {
                         <div className="pt-4">
                             <button
                                 type="submit"
-                                className="w-full py-3 px-4 border-l-4 border-terminal-border bg-terminal-bg text-terminal-fg font-bold uppercase tracking-widest hover:border-terminal-accent hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all text-sm"
+                                className="w-full py-3 px-4 border-l-4 border-terminal-border bg-terminal-bg text-terminal-fg font-bold uppercase tracking-widest hover:border-terminal-accent hover:bg-terminal-bgLight transition-all text-sm"
                             >
                                 {mode === 'login' ? 'ACCESS SYSTEM' : 'REGISTER'}
                             </button>

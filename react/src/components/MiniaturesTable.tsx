@@ -33,7 +33,7 @@ export function MiniaturesTable({
 }: MiniaturesTableProps) {
     if (miniatures.length === 0) {
         return (
-            <div className="bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal overflow-hidden">
+            <div className="bg-terminal-bgLight border border-terminal-border rounded-sm overflow-hidden">
                 <div className="p-6 text-center text-terminal-fgDim uppercase tracking-wider">
                     No miniatures in this folder yet. Add some using the button above!
                 </div>
@@ -42,7 +42,7 @@ export function MiniaturesTable({
     }
 
     return (
-        <div className="bg-terminal-bgLight border border-terminal-border rounded-sm shadow-terminal overflow-hidden">
+        <div className="bg-terminal-bgLight border border-terminal-border rounded-sm overflow-hidden">
             <table className="min-w-full divide-y divide-terminal-border">
                 <thead className="bg-terminal-bg">
                     <tr>
