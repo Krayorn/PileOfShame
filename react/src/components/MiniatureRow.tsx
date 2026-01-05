@@ -1,6 +1,8 @@
 import React from 'react';
 import type { Miniature, MiniatureStatus } from '../types/miniature';
 import { ImageUploadDialog } from './ImageUploadDialog';
+import { TerminalInput } from './ui/terminal-input';
+import { TerminalSelect } from './ui/terminal-select';
 
 interface MiniatureRowProps {
     miniature: Miniature;
@@ -49,7 +51,7 @@ export function MiniatureRow({
     };
 
     return (
-        <tr className="hover:bg-terminal-bg transition-colors">
+        <tr className="">
             {moveMode && (
                 <td className="px-6 py-4 whitespace-nowrap">
                     <input
@@ -62,12 +64,12 @@ export function MiniatureRow({
             )}
             <td className="px-6 py-4 whitespace-nowrap text-terminal-fg font-semibold">
                 {isEditing ? (
-                    <input
+                    <TerminalInput
                         type="text"
                         value={editForm.name || ''}
                         onChange={(e) => onEditFormChange({ ...editForm, name: e.target.value })}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border"
+                        className="w-full"
                     />
                 ) : (
                     miniature.name
@@ -75,13 +77,13 @@ export function MiniatureRow({
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-terminal-fg">
                 {isEditing ? (
-                    <input
+                    <TerminalInput
                         type="number"
                         min="1"
                         value={editForm.count || ''}
                         onChange={(e) => onEditFormChange({ ...editForm, count: parseInt(e.target.value) })}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border"
+                        className="w-full"
                     />
                 ) : (
                     miniature.count
@@ -89,16 +91,16 @@ export function MiniatureRow({
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
                 {isEditing ? (
-                    <select
+                    <TerminalSelect
                         value={editForm.status}
                         onChange={(e) => onEditFormChange({ ...editForm, status: e.target.value as MiniatureStatus })}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-2 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg rounded-sm focus:outline-none focus:ring-2 focus:ring-terminal-border"
+                        className="w-full"
                     >
                         <option value="Gray">Gray</option>
                         <option value="Built">Built</option>
                         <option value="Painted">Painted</option>
-                    </select>
+                    </TerminalSelect>
                 ) : (
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-bold uppercase tracking-wider rounded-sm ${getStatusColor(miniature.status)}`}>
                         {miniature.status.charAt(0).toUpperCase() + miniature.status.slice(1)}

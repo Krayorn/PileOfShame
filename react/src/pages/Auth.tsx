@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
 import { TerminalPanel } from '../components/ui/terminal-panel';
+import { TerminalInput } from '../components/ui/terminal-input';
 
 type AuthMode = 'login' | 'register';
 
@@ -72,11 +73,10 @@ export function Auth() {
                                 <label htmlFor="username" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                                     USERNAME:
                                 </label>
-                                <input
+                                <TerminalInput
                                     id="username"
                                     type="text"
                                     required
-                                    className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
@@ -85,11 +85,10 @@ export function Auth() {
                                 <label htmlFor="password" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                                     PASSWORD:
                                 </label>
-                                <input
+                                <TerminalInput
                                     id="password"
                                     type="password"
                                     required
-                                    className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -99,11 +98,10 @@ export function Auth() {
                                     <label htmlFor="confirmPassword" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                                         CONFIRM PASSWORD:
                                     </label>
-                                    <input
+                                    <TerminalInput
                                         id="confirmPassword"
                                         type="password"
                                         required
-                                        className="block w-full px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                     />

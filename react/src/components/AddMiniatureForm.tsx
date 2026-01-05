@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { MiniatureStatus } from '../types/miniature';
 import { TerminalPanel } from './ui/terminal-panel';
+import { TerminalInput } from './ui/terminal-input';
+import { TerminalSelect } from './ui/terminal-select';
 
 interface AddMiniatureFormProps {
     onSubmit: (miniature: { name: string; count: number; status: MiniatureStatus }) => void;
@@ -48,65 +50,56 @@ export function AddMiniatureForm({ onSubmit, onCancel }: AddMiniatureFormProps) 
                 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
+                        <label htmlFor="designation" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                             DESIGNATION:
                         </label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-terminal-fg font-mono">{`>`}</span>
-                            <input
-                                type="text"
-                                required
-                                value={formData.name}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    name: e.target.value
-                                })}
-                                className="flex-1 px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
-                                placeholder="ENTER_DESIGNATION"
-                                autoFocus
-                            />
-                        </div>
+                        <TerminalInput
+                            id="designation"
+                            type="text"
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                name: e.target.value
+                            })}
+                            placeholder="ENTER_DESIGNATION"
+                            autoFocus
+                        />
                     </div>
                     
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
+                        <label htmlFor="quantity" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                             QUANTITY:
                         </label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-terminal-fg font-mono">{`>`}</span>
-                            <input
-                                type="number"
-                                min="1"
-                                required
-                                value={formData.count}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    count: parseInt(e.target.value) || 1
-                                })}
-                                className="flex-1 px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
-                            />
-                        </div>
+                        <TerminalInput
+                            id="quantity"
+                            type="number"
+                            min="1"
+                            required
+                            value={formData.count}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                count: parseInt(e.target.value) || 1
+                            })}
+                        />
                     </div>
                     
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
+                        <label htmlFor="status" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                             STATUS:
                         </label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-terminal-fg font-mono">{`>`}</span>
-                            <select
-                                value={formData.status}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    status: e.target.value as MiniatureStatus
-                                })}
-                                className="flex-1 px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono uppercase"
-                            >
-                                <option value="Gray">GRAY [UNPAINTED]</option>
-                                <option value="Built">BUILT [ASSEMBLED]</option>
-                                <option value="Painted">PAINTED [COMPLETE]</option>
-                            </select>
-                        </div>
+                        <TerminalSelect
+                            id="status"
+                            value={formData.status}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                status: e.target.value as MiniatureStatus
+                            })}
+                        >
+                            <option value="Gray">GRAY [UNPAINTED]</option>
+                            <option value="Built">BUILT [ASSEMBLED]</option>
+                            <option value="Painted">PAINTED [COMPLETE]</option>
+                        </TerminalSelect>
                         <div className="mt-2 text-terminal-fgDim text-xs uppercase tracking-wider font-semibold">
                             CURRENT: {getStatusLabel(formData.status)}
                         </div>

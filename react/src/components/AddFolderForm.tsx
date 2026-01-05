@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TerminalPanel } from './ui/terminal-panel';
+import { TerminalInput } from './ui/terminal-input';
 
 interface AddFolderFormProps {
     onSubmit: (folderName: string) => void;
@@ -29,21 +30,18 @@ export function AddFolderForm({ onSubmit, onCancel }: AddFolderFormProps) {
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
+                        <label htmlFor="folderName" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                             FOLDER NAME:
                         </label>
-                        <div className="flex items-center gap-2">
-                            <span className="text-terminal-fg font-mono">{`>`}</span>
-                            <input
-                                type="text"
-                                required
-                                value={folderName}
-                                onChange={(e) => setFolderName(e.target.value)}
-                                className="flex-1 px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent transition-all font-mono"
-                                placeholder="ENTER_FOLDER_NAME"
-                                autoFocus
-                            />
-                        </div>
+                        <TerminalInput
+                            id="folderName"
+                            type="text"
+                            required
+                            value={folderName}
+                            onChange={(e) => setFolderName(e.target.value)}
+                            placeholder="ENTER_FOLDER_NAME"
+                            autoFocus
+                        />
                     </div>
                     
                     <div className="pt-4 border-t border-terminal-borderDim">
