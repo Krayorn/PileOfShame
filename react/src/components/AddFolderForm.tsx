@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TerminalPanel } from './ui/terminal-panel';
 
 interface AddFolderFormProps {
     onSubmit: (folderName: string) => void;
@@ -15,38 +16,55 @@ export function AddFolderForm({ onSubmit, onCancel }: AddFolderFormProps) {
     };
 
     return (
-        <div className="mb-4 bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-bold mb-4">Create New Folder</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                        Folder Name
-                    </label>
-                    <input
-                        type="text"
-                        required
-                        value={folderName}
-                        onChange={(e) => setFolderName(e.target.value)}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-                        placeholder="Enter folder name"
-                    />
+        <TerminalPanel className="mb-4 animate-in slide-in-from-top-2 duration-300">
+            <div className="p-6">
+                <div className="mb-4">
+                    <div className="text-terminal-fgDim text-xs uppercase tracking-widest font-semibold mb-1">
+                        DATA ENTRY PROTOCOL
+                    </div>
+                    <h3 className="text-lg font-bold uppercase tracking-wider text-terminal-fg">
+                        CREATE NEW FOLDER
+                    </h3>
                 </div>
-                <div className="flex space-x-4">
-                    <button
-                        type="submit"
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Create Folder
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
+                            FOLDER NAME:
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <span className="text-terminal-fg font-mono">{`>`}</span>
+                            <input
+                                type="text"
+                                required
+                                value={folderName}
+                                onChange={(e) => setFolderName(e.target.value)}
+                                className="flex-1 px-3 py-2 bg-terminal-bg border-l-4 border-terminal-border text-terminal-fg focus:outline-none focus:border-terminal-accent focus:shadow-terminal transition-all font-mono"
+                                placeholder="ENTER_FOLDER_NAME"
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                    
+                    <div className="pt-4 border-t border-terminal-borderDim">
+                        <div className="flex space-x-3">
+                            <button
+                                type="submit"
+                                className="px-4 py-2 border-l-4 border-terminal-border bg-terminal-bg text-terminal-fg font-bold uppercase tracking-widest hover:border-terminal-accent hover:shadow-terminal-glow hover:bg-terminal-bgLight transition-all text-sm"
+                            >
+                                → EXECUTE
+                            </button>
+                            <button
+                                type="button"
+                                onClick={onCancel}
+                                className="px-4 py-2 border-l-4 border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-bold uppercase tracking-widest hover:border-terminal-fg hover:text-terminal-fg hover:shadow-terminal transition-all text-sm"
+                            >
+                                → ABORT
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </TerminalPanel>
     );
 } 

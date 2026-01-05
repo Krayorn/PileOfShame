@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
-import './auth.css';
+import { TerminalPanel } from '../components/ui/terminal-panel';
 
 type AuthMode = 'login' | 'register';
 
@@ -46,12 +46,7 @@ export function Auth() {
 
     return (
         <div className="flex items-center justify-center bg-terminal-bg p-4">
-            <div className="max-w-md w-full bg-terminal-bgLight terminal-border relative">
-                <div className="terminal-border-left-top"></div>
-                <div className="terminal-border-left-bottom"></div>
-                <div className="terminal-border-right-top"></div>
-                <div className="terminal-border-right-bottom"></div>
-                
+            <TerminalPanel className="max-w-md w-full">
                 <div className='space-y-8 p-8' >
                     <div className="text-center mb-6">
                         <h2 className="text-3xl font-bold uppercase tracking-wider text-terminal-fg mb-2">
@@ -137,7 +132,7 @@ export function Auth() {
                         </button>
                     </div>
                 </div>
-            </div>
+            </TerminalPanel>
         </div>
     );
 }
