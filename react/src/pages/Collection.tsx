@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import type { Miniature, MiniatureStatus, Picture } from '../types/miniature';
 import { Folder } from '../types/folder';
@@ -9,6 +9,7 @@ import { AddFolderForm } from '../components/AddFolderForm';
 import { FolderItem } from '../components/FolderItem';
 import { MoveControls } from '../components/MoveControls';
 import { Album } from '../components/Album';
+import { TerminalPanel } from '../components/ui/terminal-panel';
 import { collectionApi } from '../api';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useCounter } from '../hooks/useCounter';
@@ -340,52 +341,87 @@ export function Collection() {
     
     const animatedPercentage = useCounter(paintedPercentage, {
         duration: 600,
-        delay: folderName.length * 40,
+        delay: folderName.length * 40 / 2,
         restartOnChange: true
     });
     
     const animatedTotal = useCounter(totalMiniatures, {
         duration: 800,
-        delay: folderName.length * 40,
+        delay: folderName.length * 40 / 2,
         restartOnChange: true
     });
 
+    // Ref to measure final content size
+    const measureRef = useRef<HTMLDivElement>(null);
+    const [containerWidth, setContainerWidth] = useState<number | null>(null);
+
+    // Measure the final content size when folder name or stats change
+    useEffect(() => {
+        if (measureRef.current) {
+            const width = measureRef.current.offsetWidth;
+            setContainerWidth(width);
+        }
+    }, [folderName, paintedPercentage, totalMiniatures, folderId, folder?.parent?.id]);
 
     return (
-        <div className="min-h-screen bg-terminal-bg p-4">
-            <div className="p-4">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold uppercase tracking-wider flex items-center text-terminal-fg">
+        <div className="relative">
+            {/* Back link - absolutely positioned top left */}
+            {folderId && folder?.parent?.id && (
+                <Link 
+                    to={`/collection/${folder.parent.id}`} 
+                    className="absolute top-0 left-0 text-terminal-fg hover:text-terminal-accent text-sm uppercase tracking-wider font-semibold transition-colors z-10"
+                >
+                    ← BACK TO {folder.parent.name}
+                </Link>
+            )}
+
+            {/* Logout button - absolutely positioned top right */}
+            <button
+                onClick={handleLogout}
+                className="absolute top-0 right-0 px-4 py-2 border border-terminal-destructive bg-terminal-bg text-terminal-destructive font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all z-10"
+            >
+                Logout
+            </button>
+
+            <div className="flex justify-center my-8">
+                {/* Hidden element to have fixed size while everything is animating */}
+                <div ref={measureRef} className="invisible absolute whitespace-nowrap">
+                    <div className="p-6 flex items-center justify-between w-full">
+                        <h1 className="text-2xl font-bold uppercase tracking-wider">
+                            {folderName}
+                        </h1>
+                        {statistics && folder?.id && statistics[folder.id] && (
+                            <div className="ml-4 text-lg text-terminal-fgDim uppercase tracking-wider">
+                                {paintedPercentage}% PAINTED - {totalMiniatures} MINIATURES
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Visible TerminalPanel with fixed width based on measurement */}
+                <TerminalPanel 
+                    className="inline-block bg-transparent"
+                    style={containerWidth ? { minWidth: `${containerWidth}px` } : undefined}
+                >
+                    <div className="p-6 flex items-center justify-between w-full">
+                        <h1 className="text-2xl font-bold uppercase tracking-wider">
                             <span>
                                 {typedFolderName}
                                 {typedFolderName.length < folderName.length && (
                                     <span className="animate-pulse text-terminal-accent">_</span>
                                 )}
                             </span>
-                            {statistics && folder?.id && statistics[folder.id] && (
-                                <span className="ml-4 text-lg text-terminal-fgDim">
-                                ({animatedPercentage}% painted - {animatedTotal} miniatures)
-                            </span>
-                            )}
                         </h1>
-                        {folderId && folder?.parent?.id && (
-                            <Link 
-                                to={`/collection/${folder.parent.id}`} 
-                                className="text-terminal-fg hover:text-terminal-accent text-sm uppercase tracking-wider font-semibold transition-colors"
-                            >
-                                ← Back to {folder.parent.name}
-                            </Link>
+                        {statistics && folder?.id && statistics[folder.id] && (
+                            <div className="ml-4 text-lg text-terminal-fgDim uppercase tracking-wider text-right">
+                                {animatedPercentage}% PAINTED - {animatedTotal} MINIATURES
+                            </div>
                         )}
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="px-4 py-2 border border-terminal-destructive bg-terminal-bg text-terminal-destructive font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all"
-                    >
-                        Logout
-                    </button>
-                </div>
+                </TerminalPanel>
+            </div>
+
+            <div className="max-w-7xl mx-auto">
 
                 {error && (
                     <div className="mb-4 bg-terminal-bg border border-terminal-destructive text-terminal-destructive px-4 py-3 rounded-sm">
@@ -509,7 +545,6 @@ export function Collection() {
                         )}
                     </>
                 )}
-            </div>
             </div>
         </div>
     );

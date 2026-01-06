@@ -102,13 +102,9 @@
     font-family: 'Orbitron', system-ui, sans-serif;
     letter-spacing: 0.025em;
     margin: 0;
-    padding: 12px;
+    padding: 0;
     height: 100%;
     overflow: scroll;
-  }
-  body {
-    border: 2px solid var(--muted-foreground);
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2) inset;
   }
   #root {
     margin: 0;

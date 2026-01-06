@@ -46,7 +46,7 @@ export function Auth() {
     };
 
     return (
-        <div className="flex items-center justify-center bg-terminal-bg p-4">
+        <div className="flex items-center justify-center flex-grow p-4">
             <TerminalPanel className="max-w-md w-full">
                 <div className='space-y-8 p-8' >
                     <div className="text-center mb-6">
