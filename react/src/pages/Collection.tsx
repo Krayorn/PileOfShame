@@ -365,7 +365,6 @@ export function Collection() {
 
     return (
         <div className="relative">
-            {/* Back link - absolutely positioned top left */}
             {folderId && folder?.parent?.id && (
                 <Link 
                     to={`/collection/${folder.parent.id}`} 
@@ -375,7 +374,6 @@ export function Collection() {
                 </Link>
             )}
 
-            {/* Logout button - absolutely positioned top right */}
             <button
                 onClick={handleLogout}
                 className="absolute top-0 right-0 px-4 py-2 border border-terminal-destructive bg-terminal-bg text-terminal-destructive font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all z-10"
@@ -384,9 +382,8 @@ export function Collection() {
             </button>
 
             <div className="flex justify-center my-8">
-                {/* Hidden element to have fixed size while everything is animating */}
                 <div ref={measureRef} className="invisible absolute whitespace-nowrap">
-                    <div className="p-6 flex items-center justify-between w-full">
+                    <div className="p-4 flex items-center justify-between w-full">
                         <h1 className="text-2xl font-bold uppercase tracking-wider">
                             {folderName}
                         </h1>
@@ -403,7 +400,7 @@ export function Collection() {
                     className="inline-block bg-transparent"
                     style={containerWidth ? { minWidth: `${containerWidth}px` } : undefined}
                 >
-                    <div className="p-6 flex items-center justify-between w-full">
+                    <div className="p-4 flex items-center justify-between w-full">
                         <h1 className="text-2xl font-bold uppercase tracking-wider">
                             <span>
                                 {typedFolderName}
