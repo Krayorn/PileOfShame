@@ -115,7 +115,7 @@ class Miniature
             'count' => $this->count,
             'pictures' => $this->pictures->map(fn(Picture $picture) => $picture->view())->toArray(),
             'createdAt' => $this->createdAt->format(DateTimeInterface::ATOM),
-            'paintedAt' => $this->paintedAt->format(DateTimeInterface::ATOM),
+            'paintedAt' => $this->paintedAt?->format(DateTimeInterface::ATOM),
         ];
     }
 }
