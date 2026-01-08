@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-import type { Miniature, MiniatureStatus, Picture } from '../types/miniature';
+import type { Miniature, MiniatureStatus, PictureWithMiniature } from '../types/miniature';
 import { Folder } from '../types/folder';
 import type { CollectionStatistics, FolderStatistics } from '../types/statistics';
 import { MiniaturesTable } from '../components/MiniaturesTable';
@@ -40,11 +40,16 @@ export function Collection() {
         return stats.Built + stats.Gray + stats.Painted;
     };
 
-    const getAllPicturesFromFolder = (folder: Folder): Picture[] => {
-        const pictures: Picture[] = [];
+    const getAllPicturesFromFolder = (folder: Folder): PictureWithMiniature[] => {
+        const pictures: PictureWithMiniature[] = [];
         
         folder.miniatures.forEach(miniature => {
-            pictures.push(...miniature.pictures);
+            miniature.pictures.forEach(picture => {
+                pictures.push({
+                    ...picture,
+                    miniatureName: miniature.name
+                });
+            });
         });
         
         return pictures;

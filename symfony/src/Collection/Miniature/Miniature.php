@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use DateTimeImmutable;
+use DateTimeInterface;
 
 #[ORM\Table(name: 'miniatures')]
 #[ORM\Entity()]
@@ -22,6 +24,13 @@ class Miniature
     #[ORM\OneToMany(targetEntity: Picture::class, mappedBy: 'miniature', cascade: ['persist', 'remove'])]
     private Collection $pictures;
     
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private DateTimeImmutable $createdAt;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?DateTimeImmutable $paintedAt;
+
     public function __construct(
         #[ORM\ManyToOne(targetEntity: Painter::class, inversedBy: 'miniatures')]
         #[ORM\JoinColumn(
@@ -48,6 +57,9 @@ class Miniature
     ) {
         $this->id = Uuid::uuid4();
         $this->pictures = new ArrayCollection();
+
+        $this->createdAt = new DateTimeImmutable();
+        $this->paintedAt = null;
     }
 
     public function getId(): UuidInterface
@@ -72,6 +84,13 @@ class Miniature
             $this->count = $count;
         }
         if ($status !== null) {
+            if ($this->status !== $status && $status === ProgressStatus::Painted) {
+                $this->paintedAt = new DateTimeImmutable();
+            }
+
+            if ($status !== ProgressStatus::Painted) {
+                $this->paintedAt = null;
+            }
             $this->status = $status;
         }
     }
@@ -95,6 +114,8 @@ class Miniature
             'status' => $this->status,
             'count' => $this->count,
             'pictures' => $this->pictures->map(fn(Picture $picture) => $picture->view())->toArray(),
+            'createdAt' => $this->createdAt->format(DateTimeInterface::ATOM),
+            'paintedAt' => $this->paintedAt->format(DateTimeInterface::ATOM),
         ];
     }
 }

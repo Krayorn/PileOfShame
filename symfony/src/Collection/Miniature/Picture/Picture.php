@@ -3,6 +3,8 @@
 namespace App\Collection\Miniature\Picture;
 
 use App\Collection\Miniature\Miniature;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -15,6 +17,9 @@ class Picture
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $id;
     
+    #[ORM\Column(type: 'datetime_immutable')]
+    private DateTimeImmutable $uploadedAt;
+
     public function __construct(
         #[ORM\ManyToOne(targetEntity: Miniature::class, inversedBy: 'pictures')]
         #[ORM\JoinColumn(
@@ -32,6 +37,7 @@ class Picture
         private string $s3Bucket,
     ) {
         $this->id = Uuid::uuid4();
+        $this->uploadedAt = new DateTimeImmutable();
     }
 
     public function getId(): UuidInterface
@@ -59,6 +65,7 @@ class Picture
         return [
             'id' => $this->id,
             'path' => $this->path,
+            'uploadedAt' => $this->uploadedAt->format(DateTimeInterface::ATOM),
         ];
     }
 }

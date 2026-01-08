@@ -1,7 +1,7 @@
-import type { Picture } from '../types/miniature';
+import type { PictureWithMiniature } from '../types/miniature';
 import { buildImageUrl } from '../lib/imageUtils';
 import { collectionApi } from '../api';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,7 +14,7 @@ import {
 } from './ui/alert-dialog';
 
 interface AlbumProps {
-    pictures: Picture[];
+    pictures: PictureWithMiniature[];
     title: string;
     onPictureDeleted?: (pictureId: string) => void;
 }
@@ -22,6 +22,7 @@ interface AlbumProps {
 export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
     const [deletingPictures, setDeletingPictures] = useState<Set<string>>(new Set());
     const [pictureToDelete, setPictureToDelete] = useState<string | null>(null);
+    const [currentPhotoIndex, setCurrentPhotoIndex] = useState(-1);
 
     const handleDeletePicture = async (pictureId: string) => {
         setDeletingPictures(prev => new Set(prev).add(pictureId));
@@ -40,6 +41,40 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
             });
         }
     };
+
+    const openPhotoMode = (index: number = 0) => {
+        setCurrentPhotoIndex(index);
+    };
+
+    const closePhotoMode = () => {
+        setCurrentPhotoIndex(-1);
+    };
+
+    const goToPrevious = () => {
+        setCurrentPhotoIndex((prev) => (prev > 0 ? prev - 1 : pictures.length - 1));
+    };
+
+    const goToNext = () => {
+        setCurrentPhotoIndex((prev) => (prev < pictures.length - 1 ? prev + 1 : 0));
+    };
+
+    // Handle keyboard navigation
+    useEffect(() => {
+        if (currentPhotoIndex === -1) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setCurrentPhotoIndex(-1);
+            } else if (e.key === 'ArrowLeft') {
+                setCurrentPhotoIndex((prev) => (prev > 0 ? prev - 1 : pictures.length - 1));
+            } else if (e.key === 'ArrowRight') {
+                setCurrentPhotoIndex((prev) => (prev < pictures.length - 1 ? prev + 1 : 0));
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [currentPhotoIndex, pictures.length]);
     if (pictures.length === 0) {
         return (
             <div className="mt-8">
@@ -60,25 +95,41 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
     return (
         <>
             <div className="mt-8">
-                <h3 className="text-lg font-bold uppercase tracking-wider mb-4 text-terminal-fg">
-                    {title} ({pictures.length} {pictures.length === 1 ? 'image' : 'images'})
-                </h3>
+                <div className="flex items-center gap-4 mb-4">
+                    <h3 className="text-lg font-bold uppercase tracking-wider text-terminal-fg">
+                        {title} ({pictures.length} {pictures.length === 1 ? 'image' : 'images'})
+                    </h3>
+                    <button
+                        onClick={() => openPhotoMode(0)}
+                        className="px-3 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider text-xs hover:bg-terminal-bgLight transition-all"
+                        title="Enter photo mode"
+                    >
+                        Photo Mode
+                    </button>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {pictures.map((picture) => {
                     const imageUrl = buildImageUrl(picture.path);
                     const isDeleting = deletingPictures.has(picture.id);
                     
                     return (
-                        <div key={picture.id} className="relative group border border-terminal-border rounded-sm overflow-hidden transition-all">
+                        <div 
+                            key={picture.id} 
+                            className="relative group border border-terminal-border rounded-sm overflow-hidden transition-all cursor-pointer hover:border-terminal-accent"
+                            onClick={() => openPhotoMode(pictures.indexOf(picture))}
+                        >
                             <img
                                 src={imageUrl}
                                 alt="Miniature"
                                 className="w-full h-32 object-cover"
                             />
                             <button
-                                onClick={() => setPictureToDelete(picture.id)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPictureToDelete(picture.id);
+                                }}
                                 disabled={isDeleting}
-                                className="absolute top-2 right-2 bg-terminal-bg border border-terminal-destructive text-terminal-destructive rounded-sm p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-50-glow"
+                                className="absolute top-2 right-2 bg-terminal-bg border border-terminal-destructive text-terminal-destructive rounded-sm p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-50 z-10"
                                 title="Delete image"
                             >
                                 {isDeleting ? (
@@ -97,6 +148,107 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
                 })}
             </div>
         </div>
+
+        {currentPhotoIndex !== -1 && pictures.length > 0 && (
+            <div 
+                className="fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-8"
+                onClick={closePhotoMode}
+            >
+                <div className="relative flex items-center justify-center w-full max-w-5xl my-8">
+                    {pictures.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                goToPrevious();
+                            }}
+                            className="absolute -left-10 top-1/2 -translate-y-1/2 h-32 w-10 border border-terminal-accent bg-terminal-accent text-terminal-bg hover:opacity-80 transition-all flex items-center justify-center z-20"
+                            aria-label="Previous image"
+                        >
+                            <svg 
+                                className="w-6 h-6" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+
+                    <div 
+                        className="relative w-full flex flex-col items-center justify-center border-2 bg-terminal-bg p-8"
+                        onClick={(e) => e.stopPropagation()}   
+                    >
+                        <div className="relative w-full flex items-center justify-center">
+                            <img
+                                src={buildImageUrl(pictures[currentPhotoIndex].path)}
+                                alt={`${title} - Image ${currentPhotoIndex + 1}`}
+                                className="max-w-full max-h-[70vh] object-contain"
+                            />
+                        </div>
+                        
+                        <div className="mt-4 w-full flex flex-col gap-2 px-2 text-sm uppercase tracking-wider">
+                            <div className="flex items-center justify-between">
+                                {pictures[currentPhotoIndex].miniatureName && (
+                                    <div className="text-terminal-fgDim">
+                                        SUBJECT NAME: <span className="text-terminal-fg">{pictures[currentPhotoIndex].miniatureName}</span>
+                                    </div>
+                                )}
+                                
+                                <div className="px-4 py-2 bg-terminal-bg border border-terminal-border text-terminal-fgDim uppercase tracking-wider">
+                                    {currentPhotoIndex + 1} / {pictures.length}
+                                </div>
+                            </div>
+                            
+                            <div className="text-terminal-fgDim">
+                                UPLOAD DATE: <span className="text-terminal-fg">
+                                    {new Date(pictures[currentPhotoIndex].uploadedAt).toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'short', 
+                                        day: 'numeric' 
+                                    }).toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={closePhotoMode}
+                            className="absolute top-2 right-2 w-8 h-8 border border-terminal-border bg-terminal-bg text-terminal-fg hover:bg-terminal-bgLight hover:border-terminal-accent transition-all flex items-center justify-center z-10"
+                            aria-label="Close photo mode"
+                        >
+                            <svg 
+                                className="w-4 h-4" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                {pictures.length > 1 && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            goToNext();
+                        }}
+                        className="absolute -right-10 top-1/2 -translate-y-1/2 h-32 w-10 border border-terminal-accent bg-terminal-accent text-terminal-bg hover:opacity-80 transition-all flex items-center justify-center z-20"
+                        aria-label="Next image"
+                    >
+                        <svg 
+                            className="w-6 h-6" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                )}
+                </div>
+            </div>
+        )}
 
         <AlertDialog open={pictureToDelete !== null} onOpenChange={(open) => !open && setPictureToDelete(null)}>
             <AlertDialogContent>
