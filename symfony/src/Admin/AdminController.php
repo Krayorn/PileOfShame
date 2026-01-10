@@ -15,12 +15,7 @@ class AdminController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $users = $painterRepository->findAll();
-        $usersData = [];
-
-        foreach ($users as $painter) {
-            $usersData[] = $painterRepository->getUserStatistics($painter);
-        }
+        $usersData = $painterRepository->getAllUsersStatistics();
 
         return new JsonResponse($usersData, Response::HTTP_OK);
     }

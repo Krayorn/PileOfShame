@@ -16,40 +16,67 @@ class PainterRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int, array<string, mixed>>
      */
-    public function getUserStatistics(Painter $painter): array
+    public function getAllUsersStatistics(): array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $painterId = $painter->getId()->toString();
 
-        // Count folders
-        $foldersCount = $conn->executeQuery(
-            'SELECT COUNT(*) FROM folders WHERE painter_id = ?',
-            [$painterId]
-        )->fetchOne();
+        // Get all users
+        $users = $this->findAll();
 
-        // Count miniatures
-        $miniaturesCount = $conn->executeQuery(
-            'SELECT COUNT(*) FROM miniatures WHERE painter_id = ?',
-            [$painterId]
-        )->fetchOne();
+        if (empty($users)) {
+            return [];
+        }
 
-        // Count pictures
-        $picturesCount = $conn->executeQuery(
-            'SELECT COUNT(*) FROM pictures p 
+        // Get folder counts grouped by painter_id
+        $foldersCounts = $conn->executeQuery(
+            'SELECT painter_id, COUNT(*) as count FROM folders GROUP BY painter_id'
+        )->fetchAllAssociative();
+
+        // Get miniature counts grouped by painter_id
+        $miniaturesCounts = $conn->executeQuery(
+            'SELECT painter_id, COUNT(*) as count FROM miniatures GROUP BY painter_id'
+        )->fetchAllAssociative();
+
+        // Get picture counts grouped by painter_id (via miniatures)
+        $picturesCounts = $conn->executeQuery(
+            'SELECT m.painter_id, COUNT(*) as count 
+             FROM pictures p 
              INNER JOIN miniatures m ON p.miniature_id = m.id 
-             WHERE m.painter_id = ?',
-            [$painterId]
-        )->fetchOne();
+             GROUP BY m.painter_id'
+        )->fetchAllAssociative();
 
-        return [
-            'id' => $painter->getId(),
-            'username' => $painter->getUserIdentifier(),
-            'isAdmin' => $painter->isAdmin(),
-            'foldersCount' => (int) $foldersCount,
-            'miniaturesCount' => (int) $miniaturesCount,
-            'picturesCount' => (int) $picturesCount,
-        ];
+        // Convert to associative arrays keyed by painter_id for quick lookup
+        $foldersMap = [];
+        foreach ($foldersCounts as $row) {
+            $foldersMap[$row['painter_id']] = (int) $row['count'];
+        }
+
+        $miniaturesMap = [];
+        foreach ($miniaturesCounts as $row) {
+            $miniaturesMap[$row['painter_id']] = (int) $row['count'];
+        }
+
+        $picturesMap = [];
+        foreach ($picturesCounts as $row) {
+            $picturesMap[$row['painter_id']] = (int) $row['count'];
+        }
+
+        // Combine results
+        $result = [];
+        foreach ($users as $painter) {
+            $painterId = $painter->getId()->toString();
+            $result[] = [
+                'id' => $painter->getId(),
+                'username' => $painter->getUserIdentifier(),
+                'isAdmin' => $painter->isAdmin(),
+                'foldersCount' => $foldersMap[$painterId] ?? 0,
+                'miniaturesCount' => $miniaturesMap[$painterId] ?? 0,
+                'picturesCount' => $picturesMap[$painterId] ?? 0,
+            ];
+        }
+
+        return $result;
     }
 }
