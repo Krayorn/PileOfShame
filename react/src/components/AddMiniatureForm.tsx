@@ -49,53 +49,53 @@ export function AddMiniatureForm({ onSubmit, onCancel }: AddMiniatureFormProps) 
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
+                <div>
                         <label htmlFor="designation" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                             DESIGNATION:
-                        </label>
+                    </label>
                         <TerminalInput
                             id="designation"
-                            type="text"
-                            required
-                            value={formData.name}
-                            onChange={(e) => setFormData({
-                                ...formData,
-                                name: e.target.value
-                            })}
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({
+                            ...formData,
+                            name: e.target.value
+                        })}
                             placeholder="ENTER_DESIGNATION"
                             autoFocus
-                        />
-                    </div>
+                    />
+                </div>
                     
-                    <div>
+                <div>
                         <label htmlFor="quantity" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                             QUANTITY:
-                        </label>
+                    </label>
                         <TerminalInput
                             id="quantity"
-                            type="number"
-                            min="1"
-                            required
-                            value={formData.count}
-                            onChange={(e) => setFormData({
-                                ...formData,
+                        type="number"
+                        min="1"
+                        required
+                        value={formData.count}
+                        onChange={(e) => setFormData({
+                            ...formData,
                                 count: parseInt(e.target.value) || 1
-                            })}
-                        />
-                    </div>
+                        })}
+                    />
+                </div>
                     
-                    <div>
+                <div>
                         <label htmlFor="status" className="block text-xs font-bold uppercase tracking-widest text-terminal-fg mb-2">
                             STATUS:
-                        </label>
+                    </label>
                         <TerminalSelect
                             id="status"
-                            value={formData.status}
-                            onChange={(e) => setFormData({
-                                ...formData,
-                                status: e.target.value as MiniatureStatus
-                            })}
-                        >
+                        value={formData.status}
+                        onChange={(e) => setFormData({
+                            ...formData,
+                            status: e.target.value as MiniatureStatus
+                        })}
+                    >
                             <option value="Gray">GRAY [UNPAINTED]</option>
                             <option value="Built">BUILT [ASSEMBLED]</option>
                             <option value="Painted">PAINTED [COMPLETE]</option>
@@ -103,27 +103,27 @@ export function AddMiniatureForm({ onSubmit, onCancel }: AddMiniatureFormProps) 
                         <div className="mt-2 text-terminal-fgDim text-xs uppercase tracking-wider font-semibold">
                             CURRENT: {getStatusLabel(formData.status)}
                         </div>
-                    </div>
+                </div>
                     
                     <div className="pt-4 border-t border-terminal-borderDim">
                         <div className="flex space-x-3">
-                            <button
-                                type="submit"
+                    <button
+                        type="submit"
                                 className="px-4 py-2 border-l-4 border-terminal-border bg-terminal-bg text-terminal-fg font-bold uppercase tracking-widest hover:border-terminal-accent hover:bg-terminal-bgLight transition-all text-sm"
-                            >
+                    >
                                 → EXECUTE
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onCancel}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onCancel}
                                 className="px-4 py-2 border-l-4 border-terminal-borderDim bg-terminal-bg text-terminal-fgDim font-bold uppercase tracking-widest hover:border-terminal-fg hover:text-terminal-fg transition-all text-sm"
-                            >
+                    >
                                 → ABORT
-                            </button>
+                    </button>
                         </div>
-                    </div>
-                </form>
-            </div>
+                </div>
+            </form>
+        </div>
         </TerminalPanel>
     );
 } 

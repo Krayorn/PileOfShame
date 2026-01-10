@@ -97,8 +97,8 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
             <div className="mt-8">
                 <div className="flex items-center gap-4 mb-4">
                     <h3 className="text-lg font-bold uppercase tracking-wider text-terminal-fg">
-                        {title} ({pictures.length} {pictures.length === 1 ? 'image' : 'images'})
-                    </h3>
+                    {title} ({pictures.length} {pictures.length === 1 ? 'image' : 'images'})
+                </h3>
                     <button
                         onClick={() => openPhotoMode(0)}
                         className="px-3 py-1 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider text-xs hover:bg-terminal-bgLight transition-all"

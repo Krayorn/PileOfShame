@@ -58,7 +58,6 @@ export function MiniatureRow({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => onSelectionToggle(miniature.id)}
-                        className="h-4 w-4 text-terminal-fg focus:ring-terminal-border border-terminal-border rounded bg-terminal-bg"
                     />
                 </td>
             )}
