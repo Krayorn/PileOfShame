@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Auth } from './pages/Auth'
 import { Collection } from './pages/Collection'
+import { Admin } from './pages/Admin'
 import { TerminalLayout } from './components/layouts/TerminalLayout'
 import './index.css'
 
@@ -32,6 +33,14 @@ const router = createBrowserRouter([
     element: (
       <TerminalLayout>
         <Collection />
+      </TerminalLayout>
+    ),
+  },
+  {
+    path: "/admin",
+    element: (
+      <TerminalLayout>
+        <Admin />
       </TerminalLayout>
     ),
   }

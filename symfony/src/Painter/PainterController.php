@@ -3,8 +3,6 @@
 namespace App\Painter;
 
 use App\Collection\Folder\Folder;
-use App\Player\Invitation\Invitation;
-use App\Player\Invitation\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

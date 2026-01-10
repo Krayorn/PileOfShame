@@ -27,7 +27,7 @@ class CollectionController extends AbstractController
         FolderRepository $folderRepository,
     ): Response
     {
-        /** @var $user Painter */
+        /** @var Painter $user */
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
 
@@ -64,7 +64,7 @@ class CollectionController extends AbstractController
         FolderRepository $folderRepository,
     ): Response
     {
-        /** @var $user Painter */
+        /** @var Painter $user */
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
 
@@ -92,11 +92,7 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
-        $user = $this->getUser();
-
-        if ($folder->getPainter() !== $user) {
-            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('DELETE', $folder);
 
         $entityManager->remove($folder);
         $entityManager->flush();
@@ -111,12 +107,7 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
-        /** @var $user Painter */
-        $user = $this->getUser();
-        
-        if ($folder->getPainter() !== $user) {
-            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('EDIT', $folder);
         
         $data = json_decode($request->getContent(), true);
 
@@ -148,13 +139,7 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
-
-        /** @var $user Painter */
-        $user = $this->getUser();
-
-        if ($miniature->getPainter() !== $user) {
-            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('DELETE', $miniature);
 
         $entityManager->remove($miniature);
         $entityManager->flush();
@@ -169,12 +154,7 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
-        /** @var $user Painter */
-        $user = $this->getUser();
-        
-        if ($miniature->getPainter() !== $user) {
-            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('EDIT', $miniature);
 
         $data = json_decode($request->getContent(), true);
 
@@ -202,12 +182,7 @@ class CollectionController extends AbstractController
         ImageResizeService $imageResizeService,
     ): Response
     {
-        /** @var $user Painter */
-        $user = $this->getUser();
-        
-        if ($miniature->getPainter() !== $user) {
-            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('EDIT', $miniature);
 
         if ($request->files->count() === 0) {
             return new JsonResponse(['error' => 'No files uploaded'], Response::HTTP_BAD_REQUEST);
@@ -332,12 +307,7 @@ class CollectionController extends AbstractController
         S3UploadService $s3UploadService,
     ): Response
     {
-        /** @var $user Painter */
-        $user = $this->getUser();
-        
-        if ($picture->getMiniature()->getPainter() !== $user) {
-            return new JsonResponse(['error' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('DELETE', $picture);
         
         $s3UploadService->deleteFile($picture->getPath());
         

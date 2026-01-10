@@ -130,4 +130,12 @@ export const authApi = {
   },
 };
 
+// Admin API methods
+export const adminApi = {
+  // Get all users with statistics
+  getUsers: () => {
+    return api.get('api/admin/users');
+  },
+};
+
 export default api; 
