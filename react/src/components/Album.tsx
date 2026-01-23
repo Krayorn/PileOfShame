@@ -205,11 +205,11 @@ export function Album({ pictures, title, onPictureDeleted, onPictureUpdated }: A
                         className="relative w-full flex flex-col items-center justify-center border-2 bg-terminal-bg p-8"
                         onClick={(e) => e.stopPropagation()}   
                     >
-                        <div className="relative w-full flex items-center justify-center">
+                        <div className="relative w-full max-h-[70vh] flex items-center justify-center overflow-hidden">
                             <img
                                 src={buildImageUrl(pictures[currentPhotoIndex].path)}
                                 alt={`${title} - Image ${currentPhotoIndex + 1}`}
-                                className="max-w-full max-h-[70vh] object-contain"
+                                className="max-w-full max-h-[70vh] w-auto h-auto object-contain"
                                 style={{ transform: `rotate(${pictures[currentPhotoIndex].rotation ?? 0}deg)` }}
                             />
                         </div>
@@ -248,14 +248,21 @@ export function Album({ pictures, title, onPictureDeleted, onPictureUpdated }: A
                                 aria-label="Rotate image"
                                 title="Rotate image 90°"
                             >
-                                <svg 
-                                    className="w-4 h-4" 
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24"
+        
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                height="24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                                 >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 4h4m0 0v4m0-4l-6 6" />
-                                </svg>
+                                <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path d="M3 12a9 9 0 1 0 9-9a9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></g>
+                            </svg>
+        
                             </button>
                             <button
                                 onClick={closePhotoMode}
