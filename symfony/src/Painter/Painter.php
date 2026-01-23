@@ -22,6 +22,9 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isAdmin = false;
 
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $email = null;
+
     public function __construct(
         #[ORM\Column(type: 'string', unique: true)]
         private readonly string $username,
@@ -48,6 +51,7 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
             'id' => $this->id,
             'username' => $this->username,
             'isAdmin' => $this->isAdmin,
+            'email' => $this->email,
         ];
     }
 
@@ -74,5 +78,15 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
     public function isAdmin(): bool
     {
         return $this->isAdmin;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): void
+    {
+        $this->email = $email;
     }
 }

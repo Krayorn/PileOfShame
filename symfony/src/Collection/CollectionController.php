@@ -73,13 +73,16 @@ class CollectionController extends AbstractController
         if ($folderId === null) {
             return new JsonResponse(['error' => 'Parent folder ID is required.'], Response::HTTP_BAD_REQUEST);
         }
-        $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+        $parentFolder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
 
-        if ($folder === null) {
+        if ($parentFolder === null) {
             return new JsonResponse(['error' => 'Folder not found.'], Response::HTTP_NOT_FOUND);
         }
 
-        $folder = new Folder($user, $folder, $name);
+        $maxSortOrder = $folderRepository->getMaxSortOrder($parentFolder, $user);
+        $sortOrder = $maxSortOrder + 1;
+
+        $folder = new Folder($user, $parentFolder, $name, $sortOrder);
         $entityManager->persist($folder);
         $entityManager->flush();
 
@@ -94,7 +97,13 @@ class CollectionController extends AbstractController
     {
         $this->denyAccessUnlessGranted('DELETE', $folder);
 
+        $parentFolder = $folder->getParentFolder();
         $entityManager->remove($folder);
+
+        if ($parentFolder !== null) {
+            $parentFolder->normalizeChildrenOrder();
+        }
+
         $entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
@@ -112,8 +121,15 @@ class CollectionController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         $name = $data['name'] ?? null;
+        $sortOrder = isset($data['sortOrder']) ? (int) $data['sortOrder'] : null;
 
-        $folder->update($name);
+        if ($name !== null) {
+            $folder->update($name);
+        }
+
+        if ($sortOrder !== null) {
+            $folder->setSortOrder($sortOrder);
+        }
 
         $entityManager->flush();
 
@@ -315,5 +331,31 @@ class CollectionController extends AbstractController
         $entityManager->flush();
         
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('api/collections/pictures/{picture}', methods: 'PATCH')]
+    public function updatePictureRotation(
+        Picture $picture,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response
+    {
+        $this->denyAccessUnlessGranted('EDIT', $picture);
+
+        $data = json_decode($request->getContent(), true);
+        $rotation = isset($data['rotation']) ? intval($data['rotation']) : null;
+
+        if ($rotation === null) {
+            return new JsonResponse(['error' => 'Rotation value is required.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $picture->setRotation($rotation);
+            $entityManager->flush();
+
+            return new JsonResponse($picture->view(), Response::HTTP_OK);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
     }
 }

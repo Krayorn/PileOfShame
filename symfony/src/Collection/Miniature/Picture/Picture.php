@@ -20,6 +20,9 @@ class Picture
     #[ORM\Column(type: 'datetime_immutable')]
     private DateTimeImmutable $uploadedAt;
 
+    #[ORM\Column(type: 'integer')]
+    private int $rotation = 0;
+
     public function __construct(
         #[ORM\ManyToOne(targetEntity: Miniature::class, inversedBy: 'pictures')]
         #[ORM\JoinColumn(
@@ -60,12 +63,28 @@ class Picture
         $this->path = $path;
     }
 
+    public function getRotation(): int
+    {
+        return $this->rotation;
+    }
+
+    public function setRotation(int $rotation): void
+    {
+        // Ensure rotation is one of the valid values: 0, 90, 180, 270
+        $validRotations = [0, 90, 180, 270];
+        if (!in_array($rotation, $validRotations, true)) {
+            throw new \InvalidArgumentException('Rotation must be 0, 90, 180, or 270 degrees');
+        }
+        $this->rotation = $rotation;
+    }
+
     public function view(): array
     {
         return [
             'id' => $this->id,
             'path' => $this->path,
             'uploadedAt' => $this->uploadedAt->format(DateTimeInterface::ATOM),
+            'rotation' => $this->rotation,
         ];
     }
 }

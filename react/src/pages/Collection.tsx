@@ -6,13 +6,53 @@ import type { CollectionStatistics, FolderStatistics } from '../types/statistics
 import { MiniaturesTable } from '../components/MiniaturesTable';
 import { AddMiniatureForm } from '../components/AddMiniatureForm';
 import { AddFolderForm } from '../components/AddFolderForm';
-import { FolderItem } from '../components/FolderItem';
+import { FolderItem, type FolderItemProps } from '../components/FolderItem';
 import { MoveControls } from '../components/MoveControls';
 import { Album } from '../components/Album';
 import { TerminalPanel } from '../components/ui/terminal-panel';
 import { collectionApi } from '../api';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useCounter } from '../hooks/useCounter';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableFolderItem(props: FolderItemProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: props.folder.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style}>
+            <FolderItem {...props} dragHandleProps={{ ...attributes, ...listeners }} />
+        </div>
+    );
+}
 
 export function Collection() {
     const { folderId } = useParams();
@@ -30,6 +70,13 @@ export function Collection() {
     const [allFolders, setAllFolders] = useState<{id: string, name: string}[]>([]);
     const [targetFolderId, setTargetFolderId] = useState<string>('');
     const [statistics, setStatistics] = useState<CollectionStatistics | null>(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const calculatePaintedPercentage = (stats: FolderStatistics): number => {
         const total = stats.Built + stats.Gray + stats.Painted;
@@ -272,7 +319,7 @@ export function Collection() {
             // Update the folder in state
             setFolder(prev => prev ? {
                 ...prev,
-                folders: prev.folders.map(f => 
+                folders: prev.folders.map((f: Folder) => 
                     f.id === folderId ? folder : f
                 )
             } : null);
@@ -329,6 +376,47 @@ export function Collection() {
                 ? prev.filter(id => id !== folderId)
                 : [...prev, folderId]
         );
+    };
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over || !folder || active.id === over.id) {
+            return;
+        }
+
+        const sortedFolders = folder.folders.slice().sort((a, b) => a.sortOrder - b.sortOrder);
+        const oldIndex = sortedFolders.findIndex((f: Folder) => f.id === active.id);
+        const newIndex = sortedFolders.findIndex((f: Folder) => f.id === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) {
+            return;
+        }
+
+        const movedFolder = sortedFolders[oldIndex];
+        const newSortOrder = newIndex;
+
+        // Optimistically update local state
+        const reorderedFolders = arrayMove(sortedFolders, oldIndex, newIndex);
+        setFolder(prev => prev ? {
+            ...prev,
+            folders: reorderedFolders.map((f: Folder, index: number) => ({ ...f, sortOrder: index }))
+        } : null);
+
+        // Sync with backend - just update the moved folder's position
+        try {
+            await collectionApi.updateFolder(movedFolder.id, { sortOrder: newSortOrder });
+        } catch (err) {
+            console.error('Failed to reorder folder:', err);
+            setError('Failed to reorder folder. Please try again.');
+            // Revert to previous state by refetching
+            const [collectionResponse, statsResponse] = await Promise.all([
+                collectionApi.getCollection(folderId),
+                collectionApi.getStatistics(folderId)
+            ]);
+            setFolder(collectionResponse.data);
+            setStatistics(statsResponse.data);
+        }
     };
 
     // Typewriter effect for folder name
@@ -495,18 +583,53 @@ export function Collection() {
 
                             {folder?.folders && folder.folders.length > 0 && (
                                 <div className="space-y-2">
-                                    {folder.folders.map(subfolder => (
-                                        <FolderItem
-                                            key={subfolder.id}
-                                            folder={subfolder}
-                                            statistics={statistics ? statistics[subfolder.id] : null}
-                                            moveMode={moveMode}
-                                            isSelected={selectedFolders.includes(subfolder.id)}
-                                            onDelete={handleDeleteFolder}
-                                            onSelectionToggle={toggleFolderSelection}
-                                            onUpdate={handleUpdateFolder}
-                                        />
-                                    ))}
+                                    {moveMode ? (
+                                        <DndContext
+                                            sensors={sensors}
+                                            collisionDetection={closestCenter}
+                                            onDragEnd={handleDragEnd}
+                                        >
+                                            <SortableContext
+                                                items={folder.folders
+                                                    .slice()
+                                                    .sort((a, b) => a.sortOrder - b.sortOrder)
+                                                    .map((f: Folder) => f.id)}
+                                                strategy={verticalListSortingStrategy}
+                                            >
+                                                {folder.folders
+                                                    .slice()
+                                                    .sort((a, b) => a.sortOrder - b.sortOrder)
+                                                    .map(subfolder => (
+                                                        <SortableFolderItem
+                                                            key={subfolder.id}
+                                                            folder={subfolder}
+                                                            statistics={statistics ? statistics[subfolder.id] : null}
+                                                            moveMode={moveMode}
+                                                            isSelected={selectedFolders.includes(subfolder.id)}
+                                                            onDelete={handleDeleteFolder}
+                                                            onSelectionToggle={toggleFolderSelection}
+                                                            onUpdate={handleUpdateFolder}
+                                                        />
+                                                    ))}
+                                            </SortableContext>
+                                        </DndContext>
+                                    ) : (
+                                        folder.folders
+                                            .slice()
+                                            .sort((a, b) => a.sortOrder - b.sortOrder)
+                                            .map(subfolder => (
+                                                <FolderItem
+                                                    key={subfolder.id}
+                                                    folder={subfolder}
+                                                    statistics={statistics ? statistics[subfolder.id] : null}
+                                                    moveMode={moveMode}
+                                                    isSelected={selectedFolders.includes(subfolder.id)}
+                                                    onDelete={handleDeleteFolder}
+                                                    onSelectionToggle={toggleFolderSelection}
+                                                    onUpdate={handleUpdateFolder}
+                                                />
+                                            ))
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -539,6 +662,23 @@ export function Collection() {
                                             miniatures: prevFolder.miniatures.map(miniature => ({
                                                 ...miniature,
                                                 pictures: miniature.pictures.filter(picture => picture.id !== pictureId)
+                                            }))
+                                        };
+                                    });
+                                }}
+                                onPictureUpdated={(pictureId: string, rotation: number) => {
+                                    // Update the picture rotation in the folder state
+                                    setFolder(prevFolder => {
+                                        if (!prevFolder) return prevFolder;
+                                        return {
+                                            ...prevFolder,
+                                            miniatures: prevFolder.miniatures.map(miniature => ({
+                                                ...miniature,
+                                                pictures: miniature.pictures.map(picture =>
+                                                    picture.id === pictureId
+                                                        ? { ...picture, rotation }
+                                                        : picture
+                                                )
                                             }))
                                         };
                                     });

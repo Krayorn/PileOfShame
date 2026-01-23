@@ -17,9 +17,10 @@ interface AlbumProps {
     pictures: PictureWithMiniature[];
     title: string;
     onPictureDeleted?: (pictureId: string) => void;
+    onPictureUpdated?: (pictureId: string, rotation: number) => void;
 }
 
-export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
+export function Album({ pictures, title, onPictureDeleted, onPictureUpdated }: AlbumProps) {
     const [deletingPictures, setDeletingPictures] = useState<Set<string>>(new Set());
     const [pictureToDelete, setPictureToDelete] = useState<string | null>(null);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(-1);
@@ -58,6 +59,29 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
         setCurrentPhotoIndex((prev) => (prev < pictures.length - 1 ? prev + 1 : 0));
     };
 
+    const handleRotatePicture = async (pictureId: string) => {
+        const picture = pictures.find(p => p.id === pictureId);
+        if (!picture) return;
+
+        const currentRotation = picture.rotation ?? 0;
+        const newRotation = (currentRotation + 90) % 360;
+
+        // Optimistically update parent state for instant feedback
+        onPictureUpdated?.(pictureId, newRotation);
+
+        try {
+            const response = await collectionApi.updatePictureRotation(pictureId, newRotation);
+            // Update with backend response
+            const updatedPicture = response.data;
+            onPictureUpdated?.(pictureId, updatedPicture.rotation);
+        } catch (error) {
+            console.error('Failed to rotate picture:', error);
+            // Revert on error
+            onPictureUpdated?.(pictureId, currentRotation);
+            alert('Failed to rotate image. Please try again.');
+        }
+    };
+
     // Handle keyboard navigation
     useEffect(() => {
         if (currentPhotoIndex === -1) return;
@@ -75,6 +99,7 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [currentPhotoIndex, pictures.length]);
+    
     if (pictures.length === 0) {
         return (
             <div className="mt-8">
@@ -122,6 +147,7 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
                                 src={imageUrl}
                                 alt="Miniature"
                                 className="w-full h-32 object-cover"
+                                style={{ transform: `rotate(${picture.rotation ?? 0}deg)` }}
                             />
                             <button
                                 onClick={(e) => {
@@ -184,6 +210,7 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
                                 src={buildImageUrl(pictures[currentPhotoIndex].path)}
                                 alt={`${title} - Image ${currentPhotoIndex + 1}`}
                                 className="max-w-full max-h-[70vh] object-contain"
+                                style={{ transform: `rotate(${pictures[currentPhotoIndex].rotation ?? 0}deg)` }}
                             />
                         </div>
                         
@@ -211,20 +238,40 @@ export function Album({ pictures, title, onPictureDeleted }: AlbumProps) {
                             </div>
                         </div>
 
-                        <button
-                            onClick={closePhotoMode}
-                            className="absolute top-2 right-2 w-8 h-8 border border-terminal-border bg-terminal-bg text-terminal-fg hover:bg-terminal-bgLight hover:border-terminal-accent transition-all flex items-center justify-center z-10"
-                            aria-label="Close photo mode"
-                        >
-                            <svg 
-                                className="w-4 h-4" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24"
+                        <div className="absolute top-2 right-2 flex gap-2 z-10">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRotatePicture(pictures[currentPhotoIndex].id);
+                                }}
+                                className="w-8 h-8 border border-terminal-border bg-terminal-bg text-terminal-fg hover:bg-terminal-bgLight hover:border-terminal-accent transition-all flex items-center justify-center"
+                                aria-label="Rotate image"
+                                title="Rotate image 90°"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                                <svg 
+                                    className="w-4 h-4" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 4h4m0 0v4m0-4l-6 6" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={closePhotoMode}
+                                className="w-8 h-8 border border-terminal-border bg-terminal-bg text-terminal-fg hover:bg-terminal-bgLight hover:border-terminal-accent transition-all flex items-center justify-center"
+                                aria-label="Close photo mode"
+                            >
+                                <svg 
+                                    className="w-4 h-4" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                 {pictures.length > 1 && (

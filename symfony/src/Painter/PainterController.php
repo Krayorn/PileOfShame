@@ -58,4 +58,35 @@ class PainterController extends AbstractController
         );
     }
 
+    #[Route('api/painters/me', methods: 'PATCH')]
+    public function updateMe(
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response
+    {
+        /** @var Painter $user */
+        $user = $this->getUser();
+        
+        if ($user === null) {
+            return new JsonResponse(['error' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? null;
+
+        if ($email !== null && $email !== '') {
+            // Basic email validation
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return new JsonResponse(['error' => 'Invalid email format.'], Response::HTTP_BAD_REQUEST);
+            }
+            $user->setEmail($email);
+        } else {
+            $user->setEmail(null);
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse($user->view(), Response::HTTP_OK);
+    }
+
 }

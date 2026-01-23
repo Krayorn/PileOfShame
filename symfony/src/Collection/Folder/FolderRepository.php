@@ -3,6 +3,7 @@
 namespace App\Collection\Folder;
 
 use App\Collection\Statistics;
+use App\Painter\Painter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -48,5 +49,24 @@ ORDER BY fh.root_id, m.status
         $res = $stmt->executeQuery();
 
         return new Statistics($foldersIds, $res->fetchAllAssociative());
+    }
+
+    public function getMaxSortOrder(?Folder $parentFolder, Painter $painter): int
+    {
+        $qb = $this->createQueryBuilder('f')
+            ->select('MAX(f.sortOrder) as maxSortOrder')
+            ->where('f.painter = :painter')
+            ->setParameter('painter', $painter);
+
+        if ($parentFolder === null) {
+            $qb->andWhere('f.parentFolder IS NULL');
+        } else {
+            $qb->andWhere('f.parentFolder = :parentFolder')
+               ->setParameter('parentFolder', $parentFolder);
+        }
+
+        $result = $qb->getQuery()->getSingleScalarResult();
+
+        return $result !== null ? (int) $result : -1;
     }
 }

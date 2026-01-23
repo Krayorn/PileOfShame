@@ -82,6 +82,11 @@ export const collectionApi = {
     return api.delete(`api/collections/pictures/${pictureId}`);
   },
 
+  // Update picture rotation
+  updatePictureRotation: (pictureId: string, rotation: number) => {
+    return api.patch(`api/collections/pictures/${pictureId}`, { rotation });
+  },
+
   // Delete miniature
   deleteMiniature: (miniatureId: string) => {
     return api.delete(`api/collections/miniatures/${miniatureId}`);
@@ -103,6 +108,7 @@ export const collectionApi = {
   // Update folder
   updateFolder: (folderId: string, data: Partial<{
     name: string;
+    sortOrder: number;
   }>) => {
     return api.patch(`api/collections/folders/${folderId}`, data);
   },

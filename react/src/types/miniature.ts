@@ -4,6 +4,7 @@ export interface Picture {
     id: string;
     path: string;
     uploadedAt: string; // ISO date string
+    rotation: number;
 }
 
 export interface PictureWithMiniature extends Picture {

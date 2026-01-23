@@ -21,11 +21,24 @@ class ImageResizeService
     {
         $image = $this->imageManager->read($file->getPathname());
         
+        // Auto-rotate based on EXIF orientation data
+        $image->orientate();
+        
         $width = $image->width();
         $height = $image->height();
         
         if ($width <= $this->maxDimension && $height <= $this->maxDimension) {
-            return $file;
+            // Still need to save the image after orientate() to apply the rotation
+            $tempPath = tempnam(sys_get_temp_dir(), 'oriented_');
+            $image->save($tempPath, quality: 85);
+            
+            return new UploadedFile(
+                $tempPath,
+                $file->getClientOriginalName(),
+                $file->getMimeType(),
+                $file->getError(),
+                true
+            );
         }
         
         $image->scaleDown($this->maxDimension);

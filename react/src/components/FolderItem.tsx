@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TerminalInput } from "@/components/ui/terminal-input";
 
-interface FolderItemProps {
+export interface FolderItemProps {
     folder: Folder;
     statistics: FolderStatistics | null;
     moveMode: boolean;
@@ -24,6 +24,7 @@ interface FolderItemProps {
     onDelete: (folderId: string) => void;
     onSelectionToggle: (folderId: string) => void;
     onUpdate?: (folderId: string, folder: Folder) => void;
+    dragHandleProps?: React.HTMLAttributes<HTMLElement>;
 }
 
 export function FolderItem({
@@ -33,7 +34,8 @@ export function FolderItem({
     isSelected,
     onDelete,
     onSelectionToggle,
-    onUpdate
+    onUpdate,
+    dragHandleProps
 }: FolderItemProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState(folder.name);
@@ -99,6 +101,13 @@ export function FolderItem({
                         onChange={() => onSelectionToggle(folder.id)}
                         className="mr-2"
                     />
+                    {dragHandleProps && (
+                        <div {...dragHandleProps} className="mr-2 cursor-grab active:cursor-grabbing">
+                            <svg className="w-6 h-6 text-terminal-fg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                            </svg>
+                        </div>
+                    )}
                     <svg className="w-6 h-6 text-terminal-fg mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                     </svg>

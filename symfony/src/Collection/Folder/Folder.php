@@ -43,6 +43,8 @@ class Folder
         private ?Folder $parentFolder,
         #[ORM\Column(type: 'string')]
         private string $name,
+        #[ORM\Column(type: 'integer')]
+        private int $sortOrder = 0,
     ) {
         $this->id = Uuid::uuid4();
         $this->folders = new ArrayCollection();
@@ -81,16 +83,93 @@ class Folder
         return $this->painter;
     }
 
+    public function getParentFolder(): ?Folder
+    {
+        return $this->parentFolder;
+    }
+
+    public function getSortOrder(): int
+    {
+        return $this->sortOrder;
+    }
+
+    public function setSortOrder(int $sortOrder): void
+    {
+        if ($this->sortOrder === $sortOrder) {
+            return;
+        }
+
+        if ($this->parentFolder !== null) {
+            $this->parentFolder->reorderChild($this, $sortOrder);
+        }
+    }
+
+    protected function setSortOrderInternal(int $sortOrder): void
+    {
+        $this->sortOrder = $sortOrder;
+    }
+
+    public function reorderChild(Folder $child, int $newSortOrder): void
+    {
+        $oldSortOrder = $child->getSortOrder();
+
+        if ($oldSortOrder === $newSortOrder) {
+            return;
+        }
+
+        $children = $this->folders->toArray();
+
+        if ($newSortOrder > $oldSortOrder) {
+            // Moving down: shift folders between old and new position up by 1
+            foreach ($children as $sibling) {
+                if ($sibling->getId()->equals($child->getId())) {
+                    continue;
+                }
+                $siblingOrder = $sibling->getSortOrder();
+                if ($siblingOrder > $oldSortOrder && $siblingOrder <= $newSortOrder) {
+                    $sibling->setSortOrderInternal($siblingOrder - 1);
+                }
+            }
+        } else {
+            // Moving up: shift folders between new and old position down by 1
+            foreach ($children as $sibling) {
+                if ($sibling->getId()->equals($child->getId())) {
+                    continue;
+                }
+                $siblingOrder = $sibling->getSortOrder();
+                if ($siblingOrder >= $newSortOrder && $siblingOrder < $oldSortOrder) {
+                    $sibling->setSortOrderInternal($siblingOrder + 1);
+                }
+            }
+        }
+
+        $child->setSortOrderInternal($newSortOrder);
+    }
+
+    public function normalizeChildrenOrder(): void
+    {
+        $children = $this->folders->toArray();
+        
+        usort($children, fn(Folder $a, Folder $b) => $a->getSortOrder() <=> $b->getSortOrder());
+        
+        foreach ($children as $index => $child) {
+            $child->setSortOrderInternal($index);
+        }
+    }
+
     public function view(bool $deep = true): array {
         $view = [
             'id' => $this->id,
             'name' => $this->name,
+            'sortOrder' => $this->sortOrder,
         ];
 
         if ($deep) {
             $view['parent'] = ['id' => $this->parentFolder?->getId(), 'name' => $this->parentFolder?->getName()];
             $view['miniatures'] = $this->miniatures->map(fn (Miniature $miniature) => $miniature->view())->toArray();
-            $view['folders'] = $this->folders->map(fn (Folder $folder) => $folder->view(false))->toArray();
+            $foldersArray = $this->folders->toArray();
+            usort($foldersArray, fn(Folder $a, Folder $b) => $a->getSortOrder() <=> $b->getSortOrder());
+            $view['folders'] = array_map(fn (Folder $folder) => $folder->view(false), $foldersArray);
         }
 
         return $view;
