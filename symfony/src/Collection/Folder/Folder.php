@@ -5,8 +5,8 @@ namespace App\Collection\Folder;
 use App\Collection\Miniature\Miniature;
 use App\Painter\Painter;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
@@ -17,11 +17,17 @@ class Folder
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $id;
-    
-    #[ORM\OneToMany(targetEntity: Folder::class, mappedBy: 'parentFolder')]
+
+    /**
+     * @var Collection<int, Folder>
+     */
+    #[ORM\OneToMany(mappedBy: 'parentFolder', targetEntity: self::class)]
     private Collection $folders;
 
-    #[ORM\OneToMany(targetEntity: Miniature::class, mappedBy: 'folder')]
+    /**
+     * @var Collection<int, Miniature>
+     */
+    #[ORM\OneToMany(mappedBy: 'folder', targetEntity: Miniature::class)]
     private Collection $miniatures;
 
     public function __construct(
@@ -33,14 +39,14 @@ class Folder
             onDelete: 'CASCADE'
         )]
         private readonly Painter $painter,
-        #[ORM\ManyToOne(targetEntity: Folder::class, inversedBy: 'folders')]
+        #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'folders')]
         #[ORM\JoinColumn(
             name: 'folder_id',
             referencedColumnName: 'id',
             nullable: true,
             onDelete: 'CASCADE'
         )]
-        private ?Folder $parentFolder,
+        private ?self $parentFolder,
         #[ORM\Column(type: 'string')]
         private string $name,
         #[ORM\Column(type: 'integer')]
@@ -51,7 +57,7 @@ class Folder
         $this->miniatures = new ArrayCollection();
     }
 
-    public function setParentFolder(?Folder $parentFolder): void
+    public function setParentFolder(?self $parentFolder): void
     {
         $this->parentFolder = $parentFolder;
     }
@@ -73,6 +79,9 @@ class Folder
         return $this->name;
     }
 
+    /**
+     * @return Collection<int, Folder>
+     */
     public function getFolders(): Collection
     {
         return $this->folders;
@@ -83,7 +92,7 @@ class Folder
         return $this->painter;
     }
 
-    public function getParentFolder(): ?Folder
+    public function getParentFolder(): ?self
     {
         return $this->parentFolder;
     }
@@ -99,17 +108,12 @@ class Folder
             return;
         }
 
-        if ($this->parentFolder !== null) {
+        if ($this->parentFolder instanceof self) {
             $this->parentFolder->reorderChild($this, $sortOrder);
         }
     }
 
-    protected function setSortOrderInternal(int $sortOrder): void
-    {
-        $this->sortOrder = $sortOrder;
-    }
-
-    public function reorderChild(Folder $child, int $newSortOrder): void
+    public function reorderChild(self $child, int $newSortOrder): void
     {
         $oldSortOrder = $child->getSortOrder();
 
@@ -149,15 +153,19 @@ class Folder
     public function normalizeChildrenOrder(): void
     {
         $children = $this->folders->toArray();
-        
-        usort($children, fn(Folder $a, Folder $b) => $a->getSortOrder() <=> $b->getSortOrder());
-        
+
+        usort($children, fn (Folder $a, Folder $b) => $a->getSortOrder() <=> $b->getSortOrder());
+
         foreach ($children as $index => $child) {
             $child->setSortOrderInternal($index);
         }
     }
 
-    public function view(bool $deep = true): array {
+    /**
+     * @return array<string, mixed>
+     */
+    public function view(bool $deep = true): array
+    {
         $view = [
             'id' => $this->id,
             'name' => $this->name,
@@ -165,13 +173,21 @@ class Folder
         ];
 
         if ($deep) {
-            $view['parent'] = ['id' => $this->parentFolder?->getId(), 'name' => $this->parentFolder?->getName()];
+            $view['parent'] = [
+                'id' => $this->parentFolder?->getId(),
+                'name' => $this->parentFolder?->getName(),
+            ];
             $view['miniatures'] = $this->miniatures->map(fn (Miniature $miniature) => $miniature->view())->toArray();
             $foldersArray = $this->folders->toArray();
-            usort($foldersArray, fn(Folder $a, Folder $b) => $a->getSortOrder() <=> $b->getSortOrder());
+            usort($foldersArray, fn (Folder $a, Folder $b) => $a->getSortOrder() <=> $b->getSortOrder());
             $view['folders'] = array_map(fn (Folder $folder) => $folder->view(false), $foldersArray);
         }
 
         return $view;
+    }
+
+    protected function setSortOrderInternal(int $sortOrder): void
+    {
+        $this->sortOrder = $sortOrder;
     }
 }

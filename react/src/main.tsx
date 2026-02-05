@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { Auth } from './pages/Auth'
 import { Collection } from './pages/Collection'
 import { Admin } from './pages/Admin'
+import { About } from './pages/About'
 import { TerminalLayout } from './components/layouts/TerminalLayout'
 import './index.css'
 
@@ -41,6 +42,14 @@ const router = createBrowserRouter([
     element: (
       <TerminalLayout>
         <Admin />
+      </TerminalLayout>
+    ),
+  },
+  {
+    path: "/about",
+    element: (
+      <TerminalLayout>
+        <About />
       </TerminalLayout>
     ),
   }

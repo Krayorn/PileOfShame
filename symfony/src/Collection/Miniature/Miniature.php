@@ -5,13 +5,13 @@ namespace App\Collection\Miniature;
 use App\Collection\Folder\Folder;
 use App\Collection\Miniature\Picture\Picture;
 use App\Painter\Painter;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use DateTimeImmutable;
-use DateTimeInterface;
 
 #[ORM\Table(name: 'miniatures')]
 #[ORM\Entity()]
@@ -20,16 +20,18 @@ class Miniature
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $id;
-    
-    #[ORM\OneToMany(targetEntity: Picture::class, mappedBy: 'miniature', cascade: ['persist', 'remove'])]
+
+    /**
+     * @var Collection<int, Picture>
+     */
+    #[ORM\OneToMany(mappedBy: 'miniature', targetEntity: Picture::class, cascade: ['persist', 'remove'])]
     private Collection $pictures;
-    
 
     #[ORM\Column(type: 'datetime_immutable')]
     private DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $paintedAt;
+    private ?DateTimeImmutable $paintedAt = null;
 
     public function __construct(
         #[ORM\ManyToOne(targetEntity: Painter::class, inversedBy: 'miniatures')]
@@ -59,7 +61,6 @@ class Miniature
         $this->pictures = new ArrayCollection();
 
         $this->createdAt = new DateTimeImmutable();
-        $this->paintedAt = null;
     }
 
     public function getId(): UuidInterface
@@ -72,18 +73,20 @@ class Miniature
         return $this->painter;
     }
 
-    public function setFolder(Folder $folder): void {
+    public function setFolder(Folder $folder): void
+    {
         $this->folder = $folder;
     }
 
-    public function update(?string $name, ?int $count, ?ProgressStatus $status): void {
+    public function update(?string $name, ?int $count, ?ProgressStatus $status): void
+    {
         if ($name !== null) {
             $this->name = $name;
         }
         if ($count !== null) {
             $this->count = $count;
         }
-        if ($status !== null) {
+        if ($status instanceof \App\Collection\Miniature\ProgressStatus) {
             if ($this->status !== $status && $status === ProgressStatus::Painted) {
                 $this->paintedAt = new DateTimeImmutable();
             }
@@ -95,6 +98,9 @@ class Miniature
         }
     }
 
+    /**
+     * @return Collection<int, Picture>
+     */
     public function getPictures(): Collection
     {
         return $this->pictures;
@@ -102,18 +108,22 @@ class Miniature
 
     public function addPicture(Picture $picture): void
     {
-        if (!$this->pictures->contains($picture)) {
+        if (! $this->pictures->contains($picture)) {
             $this->pictures->add($picture);
         }
     }
 
-    public function view(): array {
+    /**
+     * @return array<string, mixed>
+     */
+    public function view(): array
+    {
         return [
             'id' => $this->id,
             'name' => $this->name,
             'status' => $this->status,
             'count' => $this->count,
-            'pictures' => $this->pictures->map(fn(Picture $picture) => $picture->view())->toArray(),
+            'pictures' => $this->pictures->map(fn (Picture $picture) => $picture->view())->toArray(),
             'createdAt' => $this->createdAt->format(DateTimeInterface::ATOM),
             'paintedAt' => $this->paintedAt?->format(DateTimeInterface::ATOM),
         ];

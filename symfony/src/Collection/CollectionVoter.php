@@ -9,14 +9,16 @@ use App\Painter\Painter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/** @extends Voter<string, Folder|Miniature|Picture> */
 class CollectionVoter extends Voter
 {
     private const EDIT = 'EDIT';
+
     private const DELETE = 'DELETE';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        if (!in_array($attribute, [self::EDIT, self::DELETE])) {
+        if (! in_array($attribute, [self::EDIT, self::DELETE], true)) {
             return false;
         }
 
@@ -29,7 +31,7 @@ class CollectionVoter extends Voter
     {
         $user = $token->getUser();
 
-        if (!$user instanceof Painter) {
+        if (! $user instanceof Painter) {
             return false;
         }
 
@@ -41,10 +43,6 @@ class CollectionVoter extends Voter
             return $subject->getPainter() === $user;
         }
 
-        if ($subject instanceof Picture) {
-            return $subject->getMiniature()->getPainter() === $user;
-        }
-
-        return false;
+        return $subject->getMiniature()->getPainter() === $user;
     }
 }

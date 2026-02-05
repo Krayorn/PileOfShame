@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Miniature } from '../types/miniature';
 import { MiniatureRow } from './MiniatureRow';
 

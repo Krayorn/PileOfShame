@@ -2,36 +2,35 @@
 
 namespace App\Service;
 
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ImageResizeService
 {
-    private ImageManager $imageManager;
-    private int $maxDimension;
+    private readonly ImageManager $imageManager;
 
-    public function __construct(int $maxDimension = 1600)
-    {
+    public function __construct(
+        private readonly int $maxDimension = 1600
+    ) {
         $this->imageManager = new ImageManager(new Driver());
-        $this->maxDimension = $maxDimension;
     }
 
     public function resizeImage(UploadedFile $file): UploadedFile
     {
         $image = $this->imageManager->read($file->getPathname());
-        
+
         // Auto-rotate based on EXIF orientation data
-        $image->orientate();
-        
+        $image->orient();
+
         $width = $image->width();
         $height = $image->height();
-        
+
         if ($width <= $this->maxDimension && $height <= $this->maxDimension) {
-            // Still need to save the image after orientate() to apply the rotation
+            // Still need to save the image after orient() to apply the rotation
             $tempPath = tempnam(sys_get_temp_dir(), 'oriented_');
             $image->save($tempPath, quality: 85);
-            
+
             return new UploadedFile(
                 $tempPath,
                 $file->getClientOriginalName(),
@@ -40,12 +39,12 @@ class ImageResizeService
                 true
             );
         }
-        
+
         $image->scaleDown($this->maxDimension);
-        
+
         $tempPath = tempnam(sys_get_temp_dir(), 'resized_');
         $image->save($tempPath, quality: 85);
-        
+
         return new UploadedFile(
             $tempPath,
             $file->getClientOriginalName(),

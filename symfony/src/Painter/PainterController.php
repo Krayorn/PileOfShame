@@ -17,22 +17,27 @@ class PainterController extends AbstractController
     public function register(
         Request $request,
         PainterRepository $painterRepository,
-        UserPasswordHasherInterface  $passwordHasher,
+        UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-    ): Response
-    {
+    ): Response {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['username']) || !isset($data['password'])) {
-            return new JsonResponse(['error' => 'Invalid input.'], Response::HTTP_BAD_REQUEST);
+        if (! isset($data['username']) || ! isset($data['password'])) {
+            return new JsonResponse([
+                'error' => 'Invalid input.',
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $username = $data['username'];
         $plainPassword = $data['password'];
 
-        $userExisting = $painterRepository->findOneBy(['username' => $username]);
+        $userExisting = $painterRepository->findOneBy([
+            'username' => $username,
+        ]);
         if ($userExisting !== null) {
-            return new JsonResponse(['error' => 'Username taken.'], Response::HTTP_CONFLICT);
+            return new JsonResponse([
+                'error' => 'Username taken.',
+            ], Response::HTTP_CONFLICT);
         }
 
         $painter = new Painter($username);
@@ -44,7 +49,7 @@ class PainterController extends AbstractController
         $painter->setPassword($hashedPassword);
 
         $entityManager->persist($painter);
-        $entityManager->flush($painter);
+        $entityManager->flush();
 
         return new JsonResponse($painter->view(), Response::HTTP_CREATED);
     }
@@ -62,13 +67,13 @@ class PainterController extends AbstractController
     public function updateMe(
         Request $request,
         EntityManagerInterface $entityManager,
-    ): Response
-    {
-        /** @var Painter $user */
+    ): Response {
         $user = $this->getUser();
-        
-        if ($user === null) {
-            return new JsonResponse(['error' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
+
+        if (! $user instanceof Painter) {
+            return new JsonResponse([
+                'error' => 'Unauthorized.',
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -76,8 +81,10 @@ class PainterController extends AbstractController
 
         if ($email !== null && $email !== '') {
             // Basic email validation
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return new JsonResponse(['error' => 'Invalid email format.'], Response::HTTP_BAD_REQUEST);
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                return new JsonResponse([
+                    'error' => 'Invalid email format.',
+                ], Response::HTTP_BAD_REQUEST);
             }
             $user->setEmail($email);
         } else {
@@ -88,5 +95,4 @@ class PainterController extends AbstractController
 
         return new JsonResponse($user->view(), Response::HTTP_OK);
     }
-
 }

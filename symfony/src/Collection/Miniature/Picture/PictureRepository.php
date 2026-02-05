@@ -9,9 +9,9 @@ use Doctrine\Persistence\ManagerRegistry;
  * @extends ServiceEntityRepository<Picture>
  *
  * @method Picture|null find($id, $lockMode = null, $lockVersion = null)
- * @method Picture|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Picture|null findOneBy(array<string, mixed> $criteria, array<string, string>|null $orderBy = null)
  * @method Picture[]    findAll()
- * @method Picture[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Picture[]    findBy(array<string, mixed> $criteria, array<string, string>|null $orderBy = null, $limit = null, $offset = null)
  */
 class PictureRepository extends ServiceEntityRepository
 {

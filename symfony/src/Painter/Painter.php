@@ -19,7 +19,9 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string')]
     private string $password;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(type: 'boolean', options: [
+        'default' => false,
+    ])]
     private bool $isAdmin = false;
 
     #[ORM\Column(type: 'string', nullable: true)]
@@ -55,13 +57,22 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
         ];
     }
 
+    /**
+     * @return list<string>
+     */
     public function getRoles(): array
     {
         return $this->isAdmin ? ['ROLE_ADMIN'] : [];
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getUserIdentifier(): string
     {
+        if ($this->username === '') {
+            throw new \InvalidArgumentException('Username cannot be empty');
+        }
         return $this->username;
     }
 

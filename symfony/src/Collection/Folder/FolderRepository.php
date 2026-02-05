@@ -19,15 +19,18 @@ class FolderRepository extends ServiceEntityRepository
 
     public function getStats(Folder $folder): Statistics
     {
-        $foldersIds = [$folder->getId()->toString(), ...array_map(fn(Folder $folder) => $folder->getId()->toString(), $folder->getFolders()->toArray())];
+        $foldersIds = [
+            $folder->getId()->toString(),
+            ...array_map(fn (Folder $folder) => $folder->getId()->toString(), $folder->getFolders()->toArray()),
+        ];
         $conn = $this->getEntityManager()->getConnection();
 
-        $placeholders = implode(',', array_map(fn($id) => $conn->quote($id), $foldersIds));
+        $placeholders = implode(',', array_map(fn ($id) => $conn->quote($id), $foldersIds));
         $sql = "
 WITH RECURSIVE folder_hierarchy AS (
     -- Base case: Start with all folders (so we compute for every folder)
     SELECT id, id AS root_id
-    FROM folders where id IN ($placeholders)
+    FROM folders where id IN ({$placeholders})
 
     UNION ALL
 
@@ -58,11 +61,11 @@ ORDER BY fh.root_id, m.status
             ->where('f.painter = :painter')
             ->setParameter('painter', $painter);
 
-        if ($parentFolder === null) {
+        if (! $parentFolder instanceof \App\Collection\Folder\Folder) {
             $qb->andWhere('f.parentFolder IS NULL');
         } else {
             $qb->andWhere('f.parentFolder = :parentFolder')
-               ->setParameter('parentFolder', $parentFolder);
+                ->setParameter('parentFolder', $parentFolder);
         }
 
         $result = $qb->getQuery()->getSingleScalarResult();

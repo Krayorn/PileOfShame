@@ -9,10 +9,11 @@ use App\Collection\Miniature\MiniatureRepository;
 use App\Collection\Miniature\Picture\Picture;
 use App\Collection\Miniature\ProgressStatus;
 use App\Painter\Painter;
-use App\Service\S3UploadService;
 use App\Service\ImageResizeService;
+use App\Service\S3UploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,8 +26,7 @@ class CollectionController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         FolderRepository $folderRepository,
-    ): Response
-    {
+    ): Response {
         /** @var Painter $user */
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
@@ -37,12 +37,19 @@ class CollectionController extends AbstractController
         $status = ProgressStatus::tryFrom($data['status']);
         $folderId = $data['folderId'] ?? null;
         if ($folderId === null) {
-            return new JsonResponse(['error' => 'Folder ID is required.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'error' => 'Folder ID is required.',
+            ], Response::HTTP_BAD_REQUEST);
         }
-        $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+        $folder = $folderRepository->findOneBy([
+            'painter' => $user,
+            'id' => $folderId,
+        ]);
 
         if ($folder === null) {
-            return new JsonResponse(['error' => 'Folder not found.'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'error' => 'Folder not found.',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         if ($status === null) {
@@ -62,8 +69,7 @@ class CollectionController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         FolderRepository $folderRepository,
-    ): Response
-    {
+    ): Response {
         /** @var Painter $user */
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
@@ -71,12 +77,19 @@ class CollectionController extends AbstractController
         $name = $data['name'] ?? '';
         $folderId = $data['folderId'] ?? null;
         if ($folderId === null) {
-            return new JsonResponse(['error' => 'Parent folder ID is required.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'error' => 'Parent folder ID is required.',
+            ], Response::HTTP_BAD_REQUEST);
         }
-        $parentFolder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+        $parentFolder = $folderRepository->findOneBy([
+            'painter' => $user,
+            'id' => $folderId,
+        ]);
 
         if ($parentFolder === null) {
-            return new JsonResponse(['error' => 'Folder not found.'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'error' => 'Folder not found.',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         $maxSortOrder = $folderRepository->getMaxSortOrder($parentFolder, $user);
@@ -93,14 +106,13 @@ class CollectionController extends AbstractController
     public function deleteFolder(
         Folder $folder,
         EntityManagerInterface $entityManager,
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('DELETE', $folder);
 
         $parentFolder = $folder->getParentFolder();
         $entityManager->remove($folder);
 
-        if ($parentFolder !== null) {
+        if ($parentFolder instanceof \App\Collection\Folder\Folder) {
             $parentFolder->normalizeChildrenOrder();
         }
 
@@ -114,10 +126,9 @@ class CollectionController extends AbstractController
         Folder $folder,
         Request $request,
         EntityManagerInterface $entityManager,
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('EDIT', $folder);
-        
+
         $data = json_decode($request->getContent(), true);
 
         $name = $data['name'] ?? null;
@@ -139,22 +150,20 @@ class CollectionController extends AbstractController
     #[Route('api/collections/folders', methods: 'GET')]
     public function getAllFolders(
         FolderRepository $folderRepository,
-    ): Response
-    {   
-        /** @var $user Painter */
+    ): Response {
+        /** @var Painter $user */
         $user = $this->getUser();
-        $folders = $folderRepository->findBy(['painter' => $user]);
-        return new JsonResponse(array_map(function (Folder $folder) {
-            return $folder->view(false);
-        }, $folders), Response::HTTP_OK);
+        $folders = $folderRepository->findBy([
+            'painter' => $user,
+        ]);
+        return new JsonResponse(array_map(fn (Folder $folder) => $folder->view(false), $folders), Response::HTTP_OK);
     }
 
     #[Route('api/collections/miniatures/{miniature}', methods: 'DELETE')]
     public function deleteMini(
         Miniature $miniature,
         EntityManagerInterface $entityManager,
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('DELETE', $miniature);
 
         $entityManager->remove($miniature);
@@ -168,8 +177,7 @@ class CollectionController extends AbstractController
         Miniature $miniature,
         Request $request,
         EntityManagerInterface $entityManager,
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('EDIT', $miniature);
 
         $data = json_decode($request->getContent(), true);
@@ -196,46 +204,49 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
         S3UploadService $s3UploadService,
         ImageResizeService $imageResizeService,
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('EDIT', $miniature);
 
         if ($request->files->count() === 0) {
-            return new JsonResponse(['error' => 'No files uploaded'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'error' => 'No files uploaded',
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $uploadedFiles = $request->files->get('images');
-        
-        if (!$uploadedFiles) {
-            return new JsonResponse(['error' => 'No images found in request'], Response::HTTP_BAD_REQUEST);
+
+        if ($uploadedFiles === null) {
+            return new JsonResponse([
+                'error' => 'No images found in request',
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $uploadedPictures = [];
         $files = is_array($uploadedFiles) ? $uploadedFiles : [$uploadedFiles];
 
         foreach ($files as $file) {
-            if ($file && $file->isValid()) {
+            if ($file instanceof UploadedFile && $file->isValid()) {
                 $resizedFile = $imageResizeService->resizeImage($file);
-                
+
                 $path = $s3UploadService->generatePath($miniature->getId()->toString(), $resizedFile->getClientOriginalName());
-                
+
                 $uploadedPath = $s3UploadService->uploadFile($resizedFile, $path);
-                
+
                 $picture = new Picture(
-                    $miniature, 
-                    $uploadedPath, 
-                    $s3UploadService->getS3Endpoint(), 
+                    $miniature,
+                    $uploadedPath,
+                    $s3UploadService->getS3Endpoint(),
                     $s3UploadService->getS3Bucket()
                 );
                 $entityManager->persist($picture);
                 $miniature->addPicture($picture);
-                
+
                 $uploadedPictures[] = $picture->view();
             }
         }
-        
+
         $entityManager->flush();
-        
+
         return new JsonResponse($miniature->view(), Response::HTTP_CREATED);
     }
 
@@ -245,9 +256,8 @@ class CollectionController extends AbstractController
         EntityManagerInterface $entityManager,
         FolderRepository $folderRepository,
         MiniatureRepository $miniatureRepository,
-    ): Response
-    {
-        /** @var $user Painter */
+    ): Response {
+        /** @var Painter $user */
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
 
@@ -256,17 +266,34 @@ class CollectionController extends AbstractController
         $targetFolderId = $data['targetFolderId'] ?? null;
 
         if ($targetFolderId === null) {
-            return new JsonResponse(['error' => 'Target folder ID is required.'], Response::HTTP_BAD_REQUEST);
-        }   
+            return new JsonResponse([
+                'error' => 'Target folder ID is required.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
-        $targetFolder = $folderRepository->findOneBy(['painter' => $user, 'id' => $targetFolderId]);
-    
-        $miniatures = $miniatureRepository->findBy(['painter' => $user, 'id' => $miniatureIds]);
+        $targetFolder = $folderRepository->findOneBy([
+            'painter' => $user,
+            'id' => $targetFolderId,
+        ]);
+
+        if ($targetFolder === null) {
+            return new JsonResponse([
+                'error' => 'Target folder not found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $miniatures = $miniatureRepository->findBy([
+            'painter' => $user,
+            'id' => $miniatureIds,
+        ]);
         foreach ($miniatures as $miniature) {
             $miniature->setFolder($targetFolder);
         }
 
-        $folders = $folderRepository->findBy(['painter' => $user, 'id' => $folderIds]);
+        $folders = $folderRepository->findBy([
+            'painter' => $user,
+            'id' => $folderIds,
+        ]);
         foreach ($folders as $folder) {
             $folder->setParentFolder($targetFolder);
         }
@@ -280,16 +307,27 @@ class CollectionController extends AbstractController
     public function getCollection(
         Request $request,
         FolderRepository $folderRepository,
-    ): Response
-    {
-        /** @var $user Painter */
+    ): Response {
+        /** @var Painter $user */
         $user = $this->getUser();
 
         $folderId = $request->query->get('folderId');
         if ($folderId !== null) {
-            $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+            $folder = $folderRepository->findOneBy([
+                'painter' => $user,
+                'id' => $folderId,
+            ]);
         } else {
-            $folder = $folderRepository->findOneBy(['painter' => $user, 'parentFolder' => null]);
+            $folder = $folderRepository->findOneBy([
+                'painter' => $user,
+                'parentFolder' => null,
+            ]);
+        }
+
+        if ($folder === null) {
+            return new JsonResponse([
+                'error' => 'Collection not found.',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         return new JsonResponse($folder->view(), Response::HTTP_OK);
@@ -299,16 +337,27 @@ class CollectionController extends AbstractController
     public function getCollectionStats(
         Request $request,
         FolderRepository $folderRepository,
-    ): Response
-    {
-        /** @var $user Painter */
+    ): Response {
+        /** @var Painter $user */
         $user = $this->getUser();
 
         $folderId = $request->query->get('folderId');
         if ($folderId !== null) {
-            $folder = $folderRepository->findOneBy(['painter' => $user, 'id' => $folderId]);
+            $folder = $folderRepository->findOneBy([
+                'painter' => $user,
+                'id' => $folderId,
+            ]);
         } else {
-            $folder = $folderRepository->findOneBy(['painter' => $user, 'parentFolder' => null]);
+            $folder = $folderRepository->findOneBy([
+                'painter' => $user,
+                'parentFolder' => null,
+            ]);
+        }
+
+        if ($folder === null) {
+            return new JsonResponse([
+                'error' => 'Collection not found.',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         $stats = $folderRepository->getStats($folder);
@@ -321,15 +370,14 @@ class CollectionController extends AbstractController
         Picture $picture,
         EntityManagerInterface $entityManager,
         S3UploadService $s3UploadService,
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('DELETE', $picture);
-        
+
         $s3UploadService->deleteFile($picture->getPath());
-        
+
         $entityManager->remove($picture);
         $entityManager->flush();
-        
+
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
@@ -338,15 +386,16 @@ class CollectionController extends AbstractController
         Picture $picture,
         Request $request,
         EntityManagerInterface $entityManager,
-    ): Response
-    {
+    ): Response {
         $this->denyAccessUnlessGranted('EDIT', $picture);
 
         $data = json_decode($request->getContent(), true);
         $rotation = isset($data['rotation']) ? intval($data['rotation']) : null;
 
         if ($rotation === null) {
-            return new JsonResponse(['error' => 'Rotation value is required.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'error' => 'Rotation value is required.',
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         try {
@@ -355,7 +404,9 @@ class CollectionController extends AbstractController
 
             return new JsonResponse($picture->view(), Response::HTTP_OK);
         } catch (\InvalidArgumentException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'error' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         }
     }
 }

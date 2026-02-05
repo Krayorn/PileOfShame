@@ -7,23 +7,18 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class S3UploadService
 {
-    private S3Client $s3Client;
-    private string $bucket;
-    private string $region;
+    private readonly S3Client $s3Client;
 
     public function __construct(
         string $s3Endpoint,
         string $s3AccessKey,
         string $s3SecretKey,
-        string $s3Bucket,
-        string $s3Region = 'auto'
+        private readonly string $s3Bucket,
+        private readonly string $s3Region = 'auto'
     ) {
-        $this->bucket = $s3Bucket;
-        $this->region = $s3Region;
-
         $this->s3Client = new S3Client([
             'version' => 'latest',
-            'region' => $this->region,
+            'region' => $this->s3Region,
             'endpoint' => $s3Endpoint,
             'use_path_style_endpoint' => true,
             'credentials' => [
@@ -35,8 +30,8 @@ class S3UploadService
 
     public function uploadFile(UploadedFile $file, string $path): string
     {
-        $result = $this->s3Client->putObject([
-            'Bucket' => $this->bucket,
+        $this->s3Client->putObject([
+            'Bucket' => $this->s3Bucket,
             'Key' => $path,
             'Body' => fopen($file->getPathname(), 'r'),
             'ContentType' => $file->getMimeType(),
@@ -50,7 +45,7 @@ class S3UploadService
     {
         try {
             $this->s3Client->deleteObject([
-                'Bucket' => $this->bucket,
+                'Bucket' => $this->s3Bucket,
                 'Key' => $path,
             ]);
         } catch (\Exception $e) {
@@ -72,6 +67,6 @@ class S3UploadService
 
     public function getS3Bucket(): string
     {
-        return $this->bucket;
+        return $this->s3Bucket;
     }
 }

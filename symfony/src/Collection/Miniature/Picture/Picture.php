@@ -16,7 +16,7 @@ class Picture
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private UuidInterface $id;
-    
+
     #[ORM\Column(type: 'datetime_immutable')]
     private DateTimeImmutable $uploadedAt;
 
@@ -72,12 +72,15 @@ class Picture
     {
         // Ensure rotation is one of the valid values: 0, 90, 180, 270
         $validRotations = [0, 90, 180, 270];
-        if (!in_array($rotation, $validRotations, true)) {
+        if (! in_array($rotation, $validRotations, true)) {
             throw new \InvalidArgumentException('Rotation must be 0, 90, 180, or 270 degrees');
         }
         $this->rotation = $rotation;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function view(): array
     {
         return [

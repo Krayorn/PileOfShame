@@ -25,7 +25,7 @@ class PainterRepository extends ServiceEntityRepository
         // Get all users
         $users = $this->findAll();
 
-        if (empty($users)) {
+        if ($users === []) {
             return [];
         }
 
