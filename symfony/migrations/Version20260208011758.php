@@ -31,12 +31,12 @@ final class Version20260208011758 extends AbstractMigration
         , PRIMARY KEY(project_id, miniature_id), CONSTRAINT FK_E152D9C0166D1F9C FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_E152D9C0903C60DB FOREIGN KEY (miniature_id) REFERENCES miniatures (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE)');
         $this->addSql('CREATE INDEX IDX_E152D9C0166D1F9C ON project_miniatures (project_id)');
         $this->addSql('CREATE INDEX IDX_E152D9C0903C60DB ON project_miniatures (miniature_id)');
-        $this->addSql('CREATE TEMPORARY TABLE __temp__painter AS SELECT id, password, username, email, roles FROM painter');
+        $this->addSql('CREATE TEMPORARY TABLE __temp__painter AS SELECT id, password, username, email FROM painter');
         $this->addSql('DROP TABLE painter');
         $this->addSql('CREATE TABLE painter (id CHAR(36) NOT NULL --(DC2Type:uuid)
         , password VARCHAR(255) NOT NULL, username VARCHAR(255) NOT NULL, email VARCHAR(255) DEFAULT NULL, roles CLOB NOT NULL --(DC2Type:json)
         , PRIMARY KEY(id))');
-        $this->addSql('INSERT INTO painter (id, password, username, email, roles) SELECT id, password, username, email, roles FROM __temp__painter');
+        $this->addSql('INSERT INTO painter (id, password, username, email, roles) SELECT id, password, username, email, CASE WHEN username = \'krayorn\' THEN \'["ROLE_ADMIN"]\' ELSE \'[]\' END FROM __temp__painter');
         $this->addSql('DROP TABLE __temp__painter');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_80E09D8F85E0677 ON painter (username)');
     }
