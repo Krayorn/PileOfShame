@@ -154,10 +154,6 @@ export const projectApi = {
     return api.get('api/projects');
   },
 
-  getProject: (projectId: string) => {
-    return api.get(`api/projects/${projectId}`);
-  },
-
   createProject: (data: { name: string; targetDate?: string }) => {
     return api.post('api/projects', data);
   },

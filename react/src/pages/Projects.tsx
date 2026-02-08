@@ -13,7 +13,11 @@ import {
     DialogDescription,
 } from '../components/ui/dialog';
 import { Button } from '../components/ui/button';
-import { Skull } from 'lucide-react';
+import { Calendar } from '../components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { SkullIcon } from '../components/ui/skull-icon';
+import { format } from 'date-fns';
 
 function getProjectProgress(project: Project) {
     const total = project.miniatures.reduce((sum, m) => sum + m.count, 0);
@@ -41,7 +45,7 @@ export function Projects() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [newProjectName, setNewProjectName] = useState('');
-    const [newProjectTargetDate, setNewProjectTargetDate] = useState('');
+    const [newProjectTargetDate, setNewProjectTargetDate] = useState<Date | undefined>();
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<Miniature[]>([]);
@@ -65,23 +69,10 @@ export function Projects() {
     }, []);
 
     useEffect(() => {
-        if (!selectedProjectId) {
-            setSelectedProject(null);
-            return;
-        }
-
-        const fetchProject = async () => {
-            try {
-                const response = await projectApi.getProject(selectedProjectId);
-                setSelectedProject(response.data);
-            } catch (err) {
-                console.error('Failed to fetch project:', err);
-                setSelectedProject(null);
-            }
-        };
-
-        fetchProject();
-    }, [selectedProjectId]);
+        setSelectedProject(
+            selectedProjectId ? projects.find(p => p.id === selectedProjectId) ?? null : null
+        );
+    }, [selectedProjectId, projects]);
 
     const handleSelectProject = (projectId: string) => {
         setSearchParams({ projectId });
@@ -94,13 +85,13 @@ export function Projects() {
         try {
             const data: { name: string; targetDate?: string } = { name: newProjectName.trim() };
             if (newProjectTargetDate) {
-                data.targetDate = newProjectTargetDate;
+                data.targetDate = format(newProjectTargetDate, 'yyyy-MM-dd');
             }
             const response = await projectApi.createProject(data);
             setProjects(prev => [...prev, response.data]);
             setSearchParams({ projectId: response.data.id });
             setNewProjectName('');
-            setNewProjectTargetDate('');
+            setNewProjectTargetDate(undefined);
             setCreateDialogOpen(false);
         } catch (err) {
             console.error('Failed to create project:', err);
@@ -172,8 +163,6 @@ export function Projects() {
             setProjects(prev => prev.map(p =>
                 p.id === selectedProject.id ? updated : p
             ));
-            setSearchQuery('');
-            setSearchResults([]);
         } catch (err) {
             console.error('Failed to add miniature:', err);
         }
@@ -225,12 +214,26 @@ export function Projects() {
                                     <label className="text-xs text-terminal-fgDim uppercase tracking-wider font-semibold">
                                         Target Date
                                     </label>
-                                    <input
-                                        type="date"
-                                        value={newProjectTargetDate}
-                                        onChange={e => setNewProjectTargetDate(e.target.value)}
-                                        className="bg-terminal-bg border border-terminal-border text-terminal-fg px-3 py-2 uppercase tracking-wider text-sm w-full focus:outline-none focus:border-terminal-accent mt-1"
-                                    />
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <button
+                                                type="button"
+                                                className="bg-terminal-bg border border-terminal-border text-terminal-fg px-3 py-2 uppercase tracking-wider text-sm w-full focus:outline-none focus:border-terminal-accent mt-1 flex items-center justify-between"
+                                            >
+                                                <span className={newProjectTargetDate ? 'text-terminal-fg' : 'text-terminal-fgDim'}>
+                                                    {newProjectTargetDate ? newProjectTargetDate.toLocaleDateString() : 'SELECT DATE'}
+                                                </span>
+                                                <CalendarIcon className="size-4 text-terminal-fgDim" />
+                                            </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={newProjectTargetDate}
+                                                onSelect={setNewProjectTargetDate}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 <Button type="submit" variant="outline" className="w-full border-amber-500 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400">
                                     Initialize Project
@@ -298,7 +301,7 @@ export function Projects() {
                                             </div>
                                         </div>
 
-                                        <Skull className={`size-5 shrink-0 mt-0.5 ${skullColor(percent)}`} />
+                                        <SkullIcon className={`size-5 shrink-0 mt-0.5 ${skullColor(percent)}`} />
                                     </div>
                                 </button>
                             );

@@ -27,15 +27,6 @@ class ProjectController extends AbstractController
         return new JsonResponse(array_map(fn (Project $project) => $project->view(), $projects), Response::HTTP_OK);
     }
 
-    #[Route('api/projects/{project}', methods: 'GET')]
-    public function getProject(
-        Project $project,
-    ): Response {
-        $this->denyAccessUnlessGranted('VIEW', $project);
-
-        return new JsonResponse($project->view(), Response::HTTP_OK);
-    }
-
     #[Route('api/projects', methods: 'POST')]
     public function createProject(
         Request $request,
