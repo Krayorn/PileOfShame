@@ -19,10 +19,11 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string')]
     private string $password;
 
-    #[ORM\Column(type: 'boolean', options: [
-        'default' => false,
-    ])]
-    private bool $isAdmin = false;
+    /**
+     * @var list<string>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
 
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $email = null;
@@ -52,7 +53,7 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
         return [
             'id' => $this->id,
             'username' => $this->username,
-            'isAdmin' => $this->isAdmin,
+            'isAdmin' => in_array('ROLE_ADMIN', $this->roles, true),
             'email' => $this->email,
         ];
     }
@@ -62,7 +63,7 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        return $this->isAdmin ? ['ROLE_ADMIN'] : [];
+        return $this->roles;
     }
 
     /**
@@ -84,11 +85,6 @@ class Painter implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $hashedPassword): void
     {
         $this->password = $hashedPassword;
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->isAdmin;
     }
 
     public function getEmail(): ?string

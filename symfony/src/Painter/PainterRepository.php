@@ -70,7 +70,7 @@ class PainterRepository extends ServiceEntityRepository
             $result[] = [
                 'id' => $painter->getId(),
                 'username' => $painter->getUserIdentifier(),
-                'isAdmin' => $painter->isAdmin(),
+                'isAdmin' => in_array('ROLE_ADMIN', $painter->getRoles(), true),
                 'foldersCount' => $foldersMap[$painterId] ?? 0,
                 'miniaturesCount' => $miniaturesMap[$painterId] ?? 0,
                 'picturesCount' => $picturesMap[$painterId] ?? 0,

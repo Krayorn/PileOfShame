@@ -1,11 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 interface TerminalLayoutProps {
   children: React.ReactNode;
 }
 
 export function TerminalLayout({ children }: TerminalLayoutProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn, isAdmin } = useAuth();
+
+  const isActive = (path: string) => location.pathname.startsWith(path);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-terminal-bg flex flex-col p-4">
       <div className="relative border-b-2 border-terminal-border flex-shrink-0">
@@ -25,6 +37,64 @@ export function TerminalLayout({ children }: TerminalLayoutProps) {
           </svg>
         </div>
       </div>
+
+      {isLoggedIn && (
+        <div className="border-l-2 border-r-2 border-terminal-border px-4 pt-8 pb-2 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-1 text-xs uppercase tracking-widest font-semibold">
+            <span className="text-terminal-fg-dim mr-2">{'>'}  COGITATOR SYS // MODE:</span>
+            <Link
+              to="/collection"
+              className={`px-3 py-1 border transition-all ${
+                isActive('/collection')
+                  ? 'border-terminal-fg bg-terminal-fg/10 text-terminal-fg'
+                  : 'border-transparent text-terminal-fg-dim hover:text-terminal-fg hover:border-terminal-border'
+              }`}
+            >
+              COLLECTION
+            </Link>
+            <span className="text-terminal-fg-dim">//</span>
+            <Link
+              to="/projects"
+              className={`px-3 py-1 border transition-all ${
+                isActive('/projects')
+                  ? 'border-terminal-fg bg-terminal-fg/10 text-terminal-fg'
+                  : 'border-transparent text-terminal-fg-dim hover:text-terminal-fg hover:border-terminal-border'
+              }`}
+            >
+              PROJECTS
+            </Link>
+            {isAdmin && (
+              <>
+                <span className="text-terminal-fg-dim">//</span>
+                <Link
+                  to="/admin"
+                  className={`px-3 py-1 border transition-all ${
+                    isActive('/admin')
+                      ? 'border-terminal-warning bg-terminal-warning/10 text-terminal-warning'
+                      : 'border-transparent text-terminal-warning/60 hover:text-terminal-warning hover:border-terminal-warning/40'
+                  }`}
+                >
+                  ADMIN
+                </Link>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/about"
+              className="text-[10px] text-terminal-fg-dim/50 hover:text-terminal-fg-dim transition-colors uppercase tracking-widest"
+            >
+              ABOUT
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-xs text-terminal-destructive/70 hover:text-terminal-destructive transition-colors uppercase tracking-widest font-semibold"
+            >
+              LOGOUT
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="p-4 flex-grow border-l-2 border-r-2 border-terminal-border min-h-0 flex flex-col overflow-scroll">
         {children}
@@ -47,16 +117,7 @@ export function TerminalLayout({ children }: TerminalLayoutProps) {
           </svg>
           
         </div>
-        <div className="flex justify-end pt-2 pr-2">
-          <Link
-            to="/about"
-            className="text-xs text-terminal-fg-dim hover:text-terminal-fg transition-colors"
-          >
-            About
-          </Link>
-        </div>
       </div>
     </div>
   );
 }
-

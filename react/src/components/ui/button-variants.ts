@@ -1,0 +1,32 @@
+import { cva } from "class-variance-authority"
+
+export const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-semibold uppercase tracking-wider transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-terminal-border focus-visible:ring-terminal-border/50 focus-visible:ring-[2px] focus-visible:shadow-terminal aria-invalid:ring-terminal-destructive/20 aria-invalid:border-terminal-destructive",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-terminal-bg border border-terminal-border text-terminal-fg hover:bg-terminal-bgLight",
+        destructive:
+          "bg-terminal-bg border border-terminal-destructive text-terminal-destructive hover:bg-terminal-bgLight focus-visible:ring-terminal-destructive/50",
+        outline:
+          "border border-terminal-border bg-terminal-bg text-terminal-fg hover:bg-terminal-bgLight hover:border-terminal-accent",
+        secondary:
+          "bg-terminal-bgLight border border-terminal-borderDim text-terminal-fgDim hover:bg-terminal-bg",
+        ghost:
+          "hover:bg-terminal-bgLight hover:text-terminal-fg border border-transparent",
+        link: "text-terminal-fg underline-offset-4 hover:underline hover:text-terminal-accent",
+      },
+      size: {
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-9",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)

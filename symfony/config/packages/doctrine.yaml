@@ -20,6 +20,10 @@ doctrine:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Collection'
                 prefix: 'App\Collection'
+            Project:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Project'
+                prefix: 'App\Project'
 
 when@test:
     doctrine:

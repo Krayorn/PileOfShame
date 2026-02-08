@@ -34,7 +34,12 @@ symfony:
 	docker exec -it pileofshame-symfony-1 bash
 
 .PHONY: pre-commit
-pre-commit:
-	docker exec -it pileofshame-symfony-1 vendor/bin/rector
-	docker exec -it pileofshame-symfony-1 vendor/bin/ecs --fix
-	docker exec -it pileofshame-symfony-1 vendor/bin/phpstan analyse
+pre-commit: backend-precommit frontend-precommit
+
+backend-precommit:
+	docker exec pileofshame-symfony-1 vendor/bin/rector
+	docker exec pileofshame-symfony-1 vendor/bin/ecs --fix
+	docker exec pileofshame-symfony-1 vendor/bin/phpstan analyse
+
+frontend-precommit:
+	cd react && npm run lint

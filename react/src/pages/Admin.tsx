@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { adminApi } from '../api';
 import { TerminalPanel } from '../components/ui/terminal-panel';
 
@@ -13,7 +13,6 @@ interface UserStatistics {
 }
 
 export function Admin() {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<UserStatistics[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,9 +22,9 @@ export function Admin() {
       try {
         const response = await adminApi.getUsers();
         setUsers(response.data);
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error fetching users:', err);
-        if (err.response?.status === 403) {
+        if (axios.isAxiosError(err) && err.response?.status === 403) {
           setError('Access denied. Admin privileges required.');
         } else {
           setError('Failed to load users. Please try again later.');
@@ -37,11 +36,6 @@ export function Admin() {
 
     fetchUsers();
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
 
   if (loading) {
     return (
@@ -58,12 +52,6 @@ export function Admin() {
       <TerminalPanel className="mt-12">
         <div className="p-4">
           <p className="text-red-400">{error}</p>
-          <button
-            onClick={handleLogout}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Logout
-          </button>
         </div>
       </TerminalPanel>
     );
@@ -72,15 +60,7 @@ export function Admin() {
   return (
     <TerminalPanel className="mt-12" >
       <div className="p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-green-400">Admin Panel</h1>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Logout
-          </button>
-        </div>
+        <h1 className="text-2xl font-bold text-green-400 mb-6">Admin Panel</h1>
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-600">

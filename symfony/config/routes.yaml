@@ -16,6 +16,12 @@ admin:
         namespace: App\Admin
     type: attribute
 
+project:
+    resource:
+        path: ../src/Project/
+        namespace: App\Project
+    type: attribute
+
 # config/routes.yaml
 api_login_check:
     path: /api/login_check

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Miniature, MiniatureStatus } from '../types/miniature';
 import { ImageUploadDialog } from './ImageUploadDialog';
+import { AddToProjectDialog } from './AddToProjectDialog';
 import { TerminalInput } from './ui/terminal-input';
 import { TerminalSelect } from './ui/terminal-select';
 
@@ -128,6 +129,7 @@ export function MiniatureRow({
                             miniatureId={miniature.id} 
                             onUpload={onImageUpload}
                         />
+                        <AddToProjectDialog miniatureId={miniature.id} />
                         <button
                             onClick={() => onEdit(miniature)}
                             className="text-terminal-fg hover:text-terminal-accent transition-colors font-semibold uppercase tracking-wider text-sm"

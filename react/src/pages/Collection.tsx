@@ -139,11 +139,6 @@ export function Collection() {
         fetchAllFolders();
     }, [moveMode, folderId]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/');
-    };
-
     const handleAddMiniature = async (miniatureData: { name: string; count: number; status: MiniatureStatus }) => {
         try {
             const response = await collectionApi.createMiniature({
@@ -457,24 +452,8 @@ export function Collection() {
     }, [folderName, paintedPercentage, totalMiniatures, folderId, folder?.parent?.id]);
 
     return (
-        <div className="relative">
-            {folderId && folder?.parent?.id && (
-                <Link 
-                    to={`/collection/${folder.parent.id}`} 
-                    className="absolute top-0 left-0 text-terminal-fg hover:text-terminal-accent text-sm uppercase tracking-wider font-semibold transition-colors z-10"
-                >
-                    ← BACK TO {folder.parent.name}
-                </Link>
-            )}
-
-            <button
-                onClick={handleLogout}
-                className="absolute top-0 right-0 px-4 py-2 border border-terminal-destructive bg-terminal-bg text-terminal-destructive font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all z-10"
-            >
-                Logout
-            </button>
-
-            <div className="flex justify-center my-8">
+        <div>
+            <div className="flex justify-center mb-8">
                 <div ref={measureRef} className="invisible absolute whitespace-nowrap">
                     <div className="p-4 flex items-center justify-between w-full">
                         <h1 className="text-2xl font-bold uppercase tracking-wider">
@@ -528,7 +507,15 @@ export function Collection() {
                     <>
                         <div className="mb-8">
                             <div className="flex justify-between items-center mb-4">
-                                <div className="flex space-x-4">
+                                <div className="flex space-x-4 items-center">
+                                    {folderId && folder?.parent?.id && (
+                                        <Link
+                                            to={`/collection/${folder.parent.id}`}
+                                            className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm hover:text-terminal-accent hover:border-terminal-accent transition-all"
+                                        >
+                                            ← {folder.parent.name}
+                                        </Link>
+                                    )}
                                     <button
                                         onClick={() => setShowAddFolderForm(true)}
                                         className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all"

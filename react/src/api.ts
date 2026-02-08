@@ -121,6 +121,10 @@ export const collectionApi = {
   }) => {
     return api.patch('api/collections/miniatures', data);
   },
+
+  searchMiniatures: (query: string) => {
+    return api.get(`api/collections/miniatures/search?q=${encodeURIComponent(query)}`);
+  },
 };
 
 // Auth API methods
@@ -141,6 +145,37 @@ export const adminApi = {
   // Get all users with statistics
   getUsers: () => {
     return api.get('api/admin/users');
+  },
+};
+
+// Project API methods
+export const projectApi = {
+  getProjects: () => {
+    return api.get('api/projects');
+  },
+
+  getProject: (projectId: string) => {
+    return api.get(`api/projects/${projectId}`);
+  },
+
+  createProject: (data: { name: string; targetDate?: string }) => {
+    return api.post('api/projects', data);
+  },
+
+  updateProject: (projectId: string, data: { name?: string; targetDate?: string | null }) => {
+    return api.patch(`api/projects/${projectId}`, data);
+  },
+
+  deleteProject: (projectId: string) => {
+    return api.delete(`api/projects/${projectId}`);
+  },
+
+  addMiniature: (projectId: string, miniatureId: string) => {
+    return api.post(`api/projects/${projectId}/miniatures`, { miniatureId });
+  },
+
+  removeMiniature: (projectId: string, miniatureId: string) => {
+    return api.delete(`api/projects/${projectId}/miniatures/${miniatureId}`);
   },
 };
 

@@ -303,6 +303,24 @@ class CollectionController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('api/collections/miniatures/search', methods: 'GET')]
+    public function searchMiniatures(
+        Request $request,
+        MiniatureRepository $miniatureRepository,
+    ): Response {
+        /** @var Painter $user */
+        $user = $this->getUser();
+        $query = $request->query->get('q', '');
+
+        if (strlen($query) < 2) {
+            return new JsonResponse([], Response::HTTP_OK);
+        }
+
+        $miniatures = $miniatureRepository->search($user, $query);
+
+        return new JsonResponse(array_map(fn (Miniature $miniature) => $miniature->view(), $miniatures), Response::HTTP_OK);
+    }
+
     #[Route('api/collections', methods: 'GET')]
     public function getCollection(
         Request $request,
