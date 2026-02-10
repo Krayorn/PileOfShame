@@ -6,6 +6,7 @@ import { Admin } from './pages/Admin'
 import { Projects } from './pages/Projects'
 import { About } from './pages/About'
 import { TerminalLayout } from './components/layouts/TerminalLayout'
+import { AuthProvider } from './hooks/AuthContext'
 import './index.css'
 
 import {
@@ -66,6 +67,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>,
 )

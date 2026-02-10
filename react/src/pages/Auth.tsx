@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
+import { useAuth } from '../hooks/useAuth';
 import { TerminalPanel } from '../components/ui/terminal-panel';
 import { TerminalInput } from '../components/ui/terminal-input';
 
@@ -8,6 +9,7 @@ type AuthMode = 'login' | 'register';
 
 export function Auth() {
     const navigate = useNavigate();
+    const { login, isLoggedIn } = useAuth();
     const [mode, setMode] = useState<AuthMode>('login');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -15,12 +17,10 @@ export function Auth() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        // Check if user is already logged in
-        const token = localStorage.getItem('token');
-        if (token) {
+        if (isLoggedIn) {
             navigate('/collection');
         }
-    }, [navigate]);
+    }, [isLoggedIn, navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,7 +30,7 @@ export function Auth() {
             if (mode === 'login') {
                 const response = await authApi.login({ username, password });
                 if (response.data.token) {
-                    localStorage.setItem('token', response.data.token);
+                    login(response.data.token);
                     navigate('/collection');
                 }
             } else {
