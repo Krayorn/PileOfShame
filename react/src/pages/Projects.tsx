@@ -376,7 +376,7 @@ export function Projects() {
                                     </div>
                                     <BattleMapV2
                                         seed={selectedProject.id}
-                                        title={selectedProject.name}
+                                        miniatures={selectedProject.miniatures}
                                     />
                                 </div>
                             )}

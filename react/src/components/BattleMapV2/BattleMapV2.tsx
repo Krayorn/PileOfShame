@@ -1,52 +1,57 @@
 import { useRef, useEffect, useState } from 'react';
-import { generateBattleMap, MAP_WIDTH, MAP_HEIGHT } from './canvasGeneration';
+import { generateBattleMap } from './canvasGeneration';
+import type { Miniature } from '@/types/miniature';
+import skullUrl from '@/assets/icons/skull.svg';
+import aquilaUrl from '@/assets/icons/aquila.svg';
 
 interface BattleMapV2Props {
     seed: string;
-    title?: string;
+    miniatures: Miniature[];
     className?: string;
 }
 
-export function BattleMapV2({ seed, title, className = '' }: BattleMapV2Props) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [seedOverride, setSeedOverride] = useState<string | null>(null);
+function loadImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+    });
+}
 
-    const activeSeed = seedOverride ?? seed;
+export function BattleMapV2({ seed, miniatures, className = '' }: BattleMapV2Props) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [icons, setIcons] = useState<{ skull: HTMLImageElement; aquila: HTMLImageElement } | null>(null);
+
+    useEffect(() => {
+        Promise.all([loadImage(skullUrl), loadImage(aquilaUrl)]).then(([skull, aquila]) =>
+            setIcons({ skull, aquila }),
+        );
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas || !icons) return;
 
-        generateBattleMap(canvas, activeSeed);
-    }, [activeSeed]);
+        const zoneCount = miniatures.length;
+        const paintedZones = miniatures.map(m => m.status === 'Painted');
 
-    const randomizeSeed = () => {
-        setSeedOverride(Math.random().toString(36).substring(2, 10));
-    };
+        generateBattleMap(canvas, {
+            seed,
+            zoneCount,
+            paintedZones,
+            unpaintedIcon: icons.skull,
+            paintedIcon: icons.aquila,
+        });
+    }, [seed, miniatures, icons]);
 
     return (
         <div className={className}>
             <div className="relative border border-terminal-border overflow-hidden">
-                {title && (
-                    <div className="absolute top-0 left-0 right-0 z-10 flex justify-center">
-                        <div className="bg-terminal-bg/80 border border-amber-500/50 px-4 py-1 mt-2">
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-500">
-                                {title}
-                            </span>
-                        </div>
-                    </div>
-                )}
                 <canvas
                     ref={canvasRef}
-                    style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}
                     className="block w-full h-auto"
                 />
-                <button
-                    onClick={randomizeSeed}
-                    className="absolute bottom-2 right-2 z-10 bg-terminal-bg/80 border border-amber-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-500 hover:bg-amber-500/20 cursor-pointer"
-                >
-                    🎲 Randomize
-                </button>
             </div>
         </div>
     );

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-21 -15 42 30" fill="rgba(30,60,30,0.45)" stroke="rgba(30,60,30,0.55)" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
+  <!-- Body -->
+  <polygon points="0,-6 5,0 0,8 -5,0" />
+  <!-- Left wing -->
+  <polygon points="-5,0 -10,-6 -18,-12 -14,-6 -20,-8 -15,-3 -19,-2 -12,2 -5,0" />
+  <!-- Right wing -->
+  <polygon points="5,0 10,-6 18,-12 14,-6 20,-8 15,-3 19,-2 12,2 5,0" />
+  <!-- Left head -->
+  <polygon points="-2,-6 -5,-12 -8,-13 -5,-11 -3,-8" />
+  <!-- Right head -->
+  <polygon points="2,-6 5,-12 8,-13 5,-11 3,-8" />
+  <!-- Tail -->
+  <polygon points="-3,8 -5,14 0,12 5,14 3,8" />
+</svg>
