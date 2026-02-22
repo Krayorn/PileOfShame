@@ -54,6 +54,20 @@ class PainterController extends AbstractController
         return new JsonResponse($painter->view(), Response::HTTP_CREATED);
     }
 
+    #[Route('api/painters/me', name: 'get_me', methods: 'GET')]
+    public function getMe(): Response
+    {
+        $user = $this->getUser();
+
+        if (! $user instanceof Painter) {
+            return new JsonResponse([
+                'error' => 'Unauthorized.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return new JsonResponse($user->view(), Response::HTTP_OK);
+    }
+
     #[Route('api/painters/{painter}', name: 'get_painter', methods: 'GET')]
     public function player(Painter $painter): Response
     {

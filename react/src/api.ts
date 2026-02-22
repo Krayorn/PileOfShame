@@ -125,6 +125,14 @@ export const collectionApi = {
   searchMiniatures: (query: string) => {
     return api.get(`api/collections/miniatures/search?q=${encodeURIComponent(query)}`);
   },
+
+  getRandomMiniature: (source: 'collection' | 'all_projects' | 'project', projectId?: string) => {
+    const params = new URLSearchParams({ source });
+    if (source === 'project' && projectId) {
+      params.set('projectId', projectId);
+    }
+    return api.get(`api/collections/miniatures/random?${params.toString()}`);
+  },
 };
 
 // Auth API methods
@@ -137,6 +145,17 @@ export const authApi = {
   // Register
   register: (data: { username: string; password: string }) => {
     return api.post('api/register', data);
+  },
+};
+
+// Profile API methods
+export const profileApi = {
+  getMe: () => {
+    return api.get('api/painters/me');
+  },
+
+  updateMe: (data: { email?: string | null }) => {
+    return api.patch('api/painters/me', data);
   },
 };
 

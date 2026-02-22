@@ -9,6 +9,7 @@ use App\Collection\Miniature\MiniatureRepository;
 use App\Collection\Miniature\Picture\Picture;
 use App\Collection\Miniature\ProgressStatus;
 use App\Painter\Painter;
+use App\Project\ProjectRepository;
 use App\Service\ImageResizeService;
 use App\Service\S3UploadService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -397,6 +398,60 @@ class CollectionController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('api/collections/miniatures/random', methods: 'GET')]
+    public function randomMiniature(
+        Request $request,
+        MiniatureRepository $miniatureRepository,
+        ProjectRepository $projectRepository,
+    ): Response {
+        /** @var Painter $user */
+        $user = $this->getUser();
+        $source = $request->query->get('source', 'collection');
+        $projectId = $request->query->get('projectId');
+
+        if ($source === 'project' && $projectId !== null) {
+            $project = $projectRepository->findOneBy([
+                'painter' => $user,
+                'id' => $projectId,
+            ]);
+
+            if ($project === null) {
+                return new JsonResponse([
+                    'error' => 'Project not found.',
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            $miniatureIds = $project->getMiniatures()->map(
+                fn (Miniature $m) => $m->getId()->toString()
+            )->toArray();
+
+            $miniature = $miniatureIds !== []
+                ? $miniatureRepository->findRandomUnpaintedFromIds($user, $miniatureIds)
+                : null;
+        } elseif ($source === 'all_projects') {
+            $projects = $projectRepository->findBy(['painter' => $user]);
+            $miniatureIds = [];
+            foreach ($projects as $project) {
+                foreach ($project->getMiniatures() as $m) {
+                    $miniatureIds[] = $m->getId()->toString();
+                }
+            }
+            $miniatureIds = array_unique($miniatureIds);
+
+            $miniature = $miniatureIds !== []
+                ? $miniatureRepository->findRandomUnpaintedFromIds($user, $miniatureIds)
+                : null;
+        } else {
+            $miniature = $miniatureRepository->findRandomUnpainted($user);
+        }
+
+        if ($miniature === null) {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        }
+
+        return new JsonResponse($miniature->view(), Response::HTTP_OK);
     }
 
     #[Route('api/collections/pictures/{picture}', methods: 'PATCH')]

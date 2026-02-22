@@ -17,6 +17,7 @@ import { Calendar } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { SkullIcon } from '../components/ui/skull-icon';
+import { BattleMapV2 } from '../components/BattleMapV2/BattleMapV2';
 import { format } from 'date-fns';
 
 function getProjectProgress(project: Project) {
@@ -165,6 +166,24 @@ export function Projects() {
             ));
         } catch (err) {
             console.error('Failed to add miniature:', err);
+        }
+    };
+
+    const handleMarkAsPainted = async (miniature: Miniature) => {
+        if (!selectedProject) return;
+
+        try {
+            await collectionApi.updateMiniature(miniature.id, { status: 'Painted' });
+            const updatedMiniatures = selectedProject.miniatures.map(m =>
+                m.id === miniature.id ? { ...m, status: 'Painted' as const } : m
+            );
+            const updated = { ...selectedProject, miniatures: updatedMiniatures };
+            setSelectedProject(updated);
+            setProjects(prev => prev.map(p =>
+                p.id === selectedProject.id ? updated : p
+            ));
+        } catch (err) {
+            console.error('Failed to update miniature status:', err);
         }
     };
 
@@ -344,26 +363,21 @@ export function Projects() {
                                 </button>
                             </div>
 
-                            {/* Progress Bar */}
+                            {/* Battle Map */}
                             {detailProgress && detailProgress.total > 0 && (
                                 <div className="mb-5">
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="text-xs text-terminal-fgDim uppercase tracking-wider font-semibold">
-                                            Progress
+                                            Theatre of War
                                         </span>
                                         <span className="text-xs font-mono text-terminal-fgDim">
                                             {detailProgress.painted}/{detailProgress.total} PAINTED — {detailProgress.percent}%
                                         </span>
                                     </div>
-                                    <div className="h-2 bg-terminal-bg border border-terminal-border overflow-hidden">
-                                        <div
-                                            className="h-full transition-all duration-500"
-                                            style={{
-                                                width: `${detailProgress.percent}%`,
-                                                backgroundColor: detailProgress.percent === 100 ? 'var(--foreground)' : 'var(--chart-3)',
-                                            }}
-                                        />
-                                    </div>
+                                    <BattleMapV2
+                                        seed={selectedProject.id}
+                                        title={selectedProject.name}
+                                    />
                                 </div>
                             )}
 
@@ -463,12 +477,22 @@ export function Projects() {
                                                     {miniature.status}
                                                 </span>
                                             </div>
-                                            <button
-                                                onClick={() => handleRemoveMiniature(miniature.id)}
-                                                className="text-xs text-terminal-destructive uppercase tracking-wider hover:text-terminal-fg transition-colors"
-                                            >
-                                                [REMOVE]
-                                            </button>
+                                            <div className="flex items-center gap-3">
+                                                {miniature.status !== 'Painted' && (
+                                                    <button
+                                                        onClick={() => handleMarkAsPainted(miniature)}
+                                                        className="text-xs text-terminal-painted uppercase tracking-wider hover:text-terminal-fg transition-colors"
+                                                    >
+                                                        [PAINTED]
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleRemoveMiniature(miniature.id)}
+                                                    className="text-xs text-terminal-destructive uppercase tracking-wider hover:text-terminal-fg transition-colors"
+                                                >
+                                                    [REMOVE]
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

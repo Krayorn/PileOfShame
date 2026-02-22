@@ -5,6 +5,7 @@ import { Collection } from './pages/Collection'
 import { Admin } from './pages/Admin'
 import { Projects } from './pages/Projects'
 import { About } from './pages/About'
+import { Profile } from './pages/Profile'
 import { TerminalLayout } from './components/layouts/TerminalLayout'
 import { AuthProvider } from './hooks/AuthContext'
 import './index.css'
@@ -52,6 +53,14 @@ const router = createBrowserRouter([
     element: (
       <TerminalLayout>
         <Projects />
+      </TerminalLayout>
+    ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <TerminalLayout>
+        <Profile />
       </TerminalLayout>
     ),
   },

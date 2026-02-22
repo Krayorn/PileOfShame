@@ -70,6 +70,7 @@ export function Collection() {
     const [allFolders, setAllFolders] = useState<{id: string, name: string}[]>([]);
     const [targetFolderId, setTargetFolderId] = useState<string>('');
     const [statistics, setStatistics] = useState<CollectionStatistics | null>(null);
+    const [sortBy, setSortBy] = useState<'default' | 'name' | 'status'>('default');
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -85,6 +86,16 @@ export function Collection() {
 
     const calculateTotalMiniatures = (stats: FolderStatistics): number => {
         return stats.Built + stats.Gray + stats.Painted;
+    };
+
+    const statusOrder: Record<string, number> = { Gray: 0, Built: 1, Painted: 2 };
+
+    const getSortedMiniatures = (miniatures: Miniature[]): Miniature[] => {
+        if (sortBy === 'default') return miniatures;
+        return [...miniatures].sort((a, b) => {
+            if (sortBy === 'name') return a.name.localeCompare(b.name);
+            return (statusOrder[a.status] ?? 0) - (statusOrder[b.status] ?? 0);
+        });
     };
 
     const getAllPicturesFromFolder = (folder: Folder): PictureWithMiniature[] => {
@@ -621,8 +632,29 @@ export function Collection() {
                             )}
                         </div>
 
+                        {(folder?.miniatures?.length ?? 0) > 1 && (
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="text-xs font-bold text-terminal-fg uppercase tracking-wider">Sort by</span>
+                                <div className="flex gap-2">
+                                    {(['default', 'name', 'status'] as const).map(option => (
+                                        <button
+                                            key={option}
+                                            onClick={() => setSortBy(option)}
+                                            className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider border rounded-sm transition-all ${
+                                                sortBy === option
+                                                    ? 'border-terminal-accent text-terminal-accent bg-terminal-bg'
+                                                    : 'border-terminal-border text-terminal-fgDim bg-terminal-bg hover:border-terminal-fg hover:text-terminal-fg'
+                                            }`}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <MiniaturesTable
-                            miniatures={folder?.miniatures || []}
+                            miniatures={getSortedMiniatures(folder?.miniatures || [])}
                             moveMode={moveMode}
                             editingId={editingId}
                             editForm={editForm}

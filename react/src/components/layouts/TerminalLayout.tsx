@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { SkullIcon } from '../ui/skull-icon';
+import { RandomMiniatureDialog } from '../RandomMiniatureDialog';
 
 interface TerminalLayoutProps {
   children: React.ReactNode;
@@ -82,6 +83,13 @@ export function TerminalLayout({ children }: TerminalLayoutProps) {
               )}
             </div>
             <div className="flex items-center gap-4">
+              <RandomMiniatureDialog />
+              <Link
+                to="/profile"
+                className="text-[10px] text-terminal-fg-dim/50 hover:text-terminal-fg-dim transition-colors uppercase tracking-widest"
+              >
+                PROFILE
+              </Link>
               <Link
                 to="/about"
                 className="text-[10px] text-terminal-fg-dim/50 hover:text-terminal-fg-dim transition-colors uppercase tracking-widest"
