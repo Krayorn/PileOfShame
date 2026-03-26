@@ -16,14 +16,23 @@ RUN mkdir -p /var/log/nginx
 
 CMD ["nginx", "-g", "daemon off;"]
 
+# Build React app
+FROM node:20-alpine as frontend-build
+
+WORKDIR /app
+COPY react/package.json react/package-lock.json ./
+RUN npm ci
+COPY react/ ./
+RUN npm run build
+
 # Production stage
 FROM base as prod
 
 # Create directory for logs
 RUN mkdir -p /var/log/nginx
 
-# Copy built React files
-COPY /react/dist /usr/share/nginx/html
+# Copy built React files from frontend build stage
+COPY --from=frontend-build /app/dist /usr/share/nginx/html
 
 # Set proper permissions
 RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx /usr/share/nginx/html

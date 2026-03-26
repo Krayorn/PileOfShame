@@ -9,9 +9,6 @@ build-prod:
 	docker-compose -f docker-compose.prod.yml up -d --build
 
 deploy:
-	@echo "Building frontend..."
-	@cd react && npm install
-	@cd react && npm run build
 	make build-prod
 	make up-prod
 
