@@ -6,8 +6,7 @@ up:
 build-prod:
 	@echo "Building production environment..."
 	@echo "Building Docker containers..."
-	docker compose -f docker-compose.prod.yml build --no-cache
-	docker compose -f docker-compose.prod.yml up -d
+	docker compose -f docker-compose.prod.yml up -d --build
 
 deploy:
 	make build-prod
