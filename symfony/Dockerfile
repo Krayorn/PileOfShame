@@ -41,11 +41,9 @@ COPY . .
 # Install dependencies (skip scripts to avoid .env dependency)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Clear cache
-RUN php bin/console cache:clear --env=prod
+# Clear cache then set proper permissions
+RUN php bin/console cache:clear --env=prod \
+    && chown -R www-data:www-data var/ \
+    && chmod -R 755 var/
 
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]

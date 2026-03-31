@@ -14,11 +14,6 @@ services:
     environment:
       APP_ENV: prod
       APP_DEBUG: 0
-    read_only: true
-    tmpfs:
-      - /tmp:noexec,nosuid,size=64M
-      - /var/run:size=1M
-      - /var/www/html/symfony/var:size=128M
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
