@@ -423,22 +423,24 @@ class CollectionController extends AbstractController
                 ], Response::HTTP_NOT_FOUND);
             }
 
-            $miniatureIds = $project->getMiniatures()->map(
+            $miniatureIds = array_values($project->getMiniatures()->map(
                 fn (Miniature $m) => $m->getId()->toString()
-            )->toArray();
+            )->toArray());
 
             $miniature = $miniatureIds !== []
                 ? $miniatureRepository->findRandomUnpaintedFromIds($user, $miniatureIds)
                 : null;
         } elseif ($source === 'all_projects') {
-            $projects = $projectRepository->findBy(['painter' => $user]);
+            $projects = $projectRepository->findBy([
+                'painter' => $user,
+            ]);
             $miniatureIds = [];
             foreach ($projects as $project) {
                 foreach ($project->getMiniatures() as $m) {
                     $miniatureIds[] = $m->getId()->toString();
                 }
             }
-            $miniatureIds = array_unique($miniatureIds);
+            $miniatureIds = array_values(array_unique($miniatureIds));
 
             $miniature = $miniatureIds !== []
                 ? $miniatureRepository->findRandomUnpaintedFromIds($user, $miniatureIds)
@@ -447,7 +449,7 @@ class CollectionController extends AbstractController
             $miniature = $miniatureRepository->findRandomUnpainted($user);
         }
 
-        if ($miniature === null) {
+        if (! $miniature instanceof \App\Collection\Miniature\Miniature) {
             return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
 

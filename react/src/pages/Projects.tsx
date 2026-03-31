@@ -269,7 +269,21 @@ export function Projects() {
                     </div>
                 ) : projects.length === 0 ? (
                     <div className="border border-terminal-border p-4">
-                        <p className="text-terminal-fgDim uppercase tracking-wider text-sm text-center">No active projects</p>
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-amber-500 text-xs font-mono">▶</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-amber-500">
+                                No Active Campaigns
+                            </span>
+                        </div>
+                        <p className="text-terminal-fgDim uppercase tracking-wider text-xs mb-3">
+                            Create a project to start tracking your painting progress.
+                        </p>
+                        <button
+                            onClick={() => setCreateDialogOpen(true)}
+                            className="w-full px-3 py-2 border border-amber-500 bg-terminal-bg text-amber-500 font-semibold uppercase tracking-wider rounded-sm hover:bg-amber-500/10 transition-all text-xs"
+                        >
+                            [+ Initialize First Project]
+                        </button>
                     </div>
                 ) : (
                     <div className="space-y-1">
@@ -331,7 +345,65 @@ export function Projects() {
 
             {/* Right Panel - Project Detail */}
             <div className="flex-1 min-w-0">
-                {!selectedProject ? (
+                {!selectedProject && projects.length === 0 ? (
+                    <TerminalPanel>
+                        <div className="p-6">
+                            <div className="flex items-center gap-2 mb-6">
+                                <span className="text-amber-500 text-xs font-mono">▶</span>
+                                <h2 className="text-sm font-bold uppercase tracking-wider text-amber-500">
+                                    Campaign Briefing — Operations Guide
+                                </h2>
+                            </div>
+
+                            <div className="space-y-5 mb-8">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-amber-500 font-mono text-xs">01</span>
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">
+                                            Create a Project
+                                        </h3>
+                                    </div>
+                                    <p className="text-sm text-terminal-fgDim uppercase tracking-wider ml-6">
+                                        Name your painting campaign and set an optional deadline to keep yourself on track.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-amber-500 font-mono text-xs">02</span>
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">
+                                            Assign Units
+                                        </h3>
+                                    </div>
+                                    <p className="text-sm text-terminal-fgDim uppercase tracking-wider ml-6">
+                                        Search your collection and add the miniatures you want to paint for this project.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-amber-500 font-mono text-xs">03</span>
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">
+                                            Paint & Conquer
+                                        </h3>
+                                    </div>
+                                    <p className="text-sm text-terminal-fgDim uppercase tracking-wider ml-6">
+                                        Mark units as painted and watch the Battle Map come to life as your forces are deployed.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="border-t border-terminal-border pt-4">
+                                <button
+                                    onClick={() => setCreateDialogOpen(true)}
+                                    className="px-4 py-2 border border-amber-500 bg-terminal-bg text-amber-500 font-semibold uppercase tracking-wider rounded-sm hover:bg-amber-500/10 transition-all text-sm"
+                                >
+                                    [+ Initialize First Project]
+                                </button>
+                            </div>
+                        </div>
+                    </TerminalPanel>
+                ) : !selectedProject ? (
                     <div className="flex items-center justify-center h-64 border border-terminal-border">
                         <p className="text-terminal-fgDim uppercase tracking-wider text-sm">
                             Select a project to view details

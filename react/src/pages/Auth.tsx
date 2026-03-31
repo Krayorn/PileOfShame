@@ -40,7 +40,7 @@ export function Auth() {
                 setPassword('');
                 setConfirmPassword('');
             }
-        } catch (err) {
+        } catch {
             setError('Authentication failed. Please try again.');
         }
     };

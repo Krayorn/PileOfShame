@@ -319,6 +319,158 @@ function drawZoneIcons(
     }
 }
 
+// --- Attack arrows ---
+
+function findAdjacentPairs(
+    w: number,
+    h: number,
+    owner: Int16Array,
+    zoneCount: number,
+): Set<string> {
+    const pairs = new Set<string>();
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const zone = owner[y * w + x];
+            if (zone < 0 || zone >= zoneCount) continue;
+
+            for (const [nx, ny] of [[x + 1, y], [x, y + 1]]) {
+                if (nx >= w || ny >= h) continue;
+                const neighbor = owner[ny * w + nx];
+                if (neighbor < 0 || neighbor >= zoneCount || neighbor === zone) continue;
+                const a = Math.min(zone, neighbor);
+                const b = Math.max(zone, neighbor);
+                pairs.add(`${a}-${b}`);
+            }
+        }
+    }
+
+    return pairs;
+}
+
+function dist(a: Point, b: Point): number {
+    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+
+function computeAttackArrows(
+    centroids: Point[],
+    paintedZones: boolean[],
+    adjacentPairs: Set<string>,
+): Array<{ from: Point; to: Point }> {
+    const arrows: Array<{ from: Point; to: Point }> = [];
+    const paintedIndices = paintedZones.map((p, i) => p ? i : -1).filter(i => i >= 0);
+    const unpaintedIndices = paintedZones.map((p, i) => !p ? i : -1).filter(i => i >= 0);
+
+    if (unpaintedIndices.length === 0) return arrows;
+
+    if (paintedIndices.length === 0) {
+        // No painted zones: arrow from the nearest edge toward unpainted zones close to a side
+        const edgeMargin = 60;
+        const edgeCandidates = unpaintedIndices.filter(i => {
+            const c = centroids[i];
+            return c.x < edgeMargin || c.x > MAP_WIDTH - edgeMargin ||
+                   c.y < edgeMargin || c.y > MAP_HEIGHT - edgeMargin;
+        });
+        const targets = edgeCandidates.length > 0 ? edgeCandidates : [unpaintedIndices[0]];
+        const target = centroids[targets[0]];
+
+        // Determine which edge is closest
+        const distances = [
+            { edge: { x: target.x, y: -15 }, d: target.y },           // top
+            { edge: { x: MAP_WIDTH + 15, y: target.y }, d: MAP_WIDTH - target.x }, // right
+            { edge: { x: target.x, y: MAP_HEIGHT + 15 }, d: MAP_HEIGHT - target.y }, // bottom
+            { edge: { x: -15, y: target.y }, d: target.x },           // left
+        ];
+        distances.sort((a, b) => a.d - b.d);
+        arrows.push({ from: distances[0].edge, to: target });
+        return arrows;
+    }
+
+    // For each painted zone, find the closest adjacent unpainted zone
+    const targeted = new Set<number>();
+    for (const pi of paintedIndices) {
+        let bestDist = Infinity;
+        let bestTarget = -1;
+        for (const ui of unpaintedIndices) {
+            const a = Math.min(pi, ui);
+            const b = Math.max(pi, ui);
+            if (!adjacentPairs.has(`${a}-${b}`)) continue;
+            const d = dist(centroids[pi], centroids[ui]);
+            if (d < bestDist) {
+                bestDist = d;
+                bestTarget = ui;
+            }
+        }
+        if (bestTarget >= 0 && !targeted.has(bestTarget)) {
+            targeted.add(bestTarget);
+            arrows.push({ from: centroids[pi], to: centroids[bestTarget] });
+        }
+    }
+
+    return arrows;
+}
+
+function drawAttackArrows(
+    ctx: CanvasRenderingContext2D,
+    arrows: Array<{ from: Point; to: Point }>,
+): void {
+    for (const { from, to } of arrows) {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len < 1) continue;
+
+        const ux = dx / len;
+        const uy = dy / len;
+
+        // Shorten the arrow so it doesn't overlap icons
+        const shortenStart = 18;
+        const shortenEnd = 18;
+        const sx = from.x + ux * shortenStart;
+        const sy = from.y + uy * shortenStart;
+        const ex = to.x - ux * shortenEnd;
+        const ey = to.y - uy * shortenEnd;
+
+        const arrowLen = Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2);
+        if (arrowLen < 10) continue;
+
+        // Draw dashed line
+        ctx.save();
+        ctx.strokeStyle = 'rgba(50, 255, 100, 0.7)';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([8, 6]);
+        ctx.shadowColor = 'rgba(50, 255, 100, 0.4)';
+        ctx.shadowBlur = 6;
+
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+
+        // Draw arrowhead
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(50, 255, 100, 0.85)';
+        const headLen = 10;
+        const headAngle = Math.PI / 6;
+        const angle = Math.atan2(ey - sy, ex - sx);
+
+        ctx.beginPath();
+        ctx.moveTo(ex, ey);
+        ctx.lineTo(
+            ex - headLen * Math.cos(angle - headAngle),
+            ey - headLen * Math.sin(angle - headAngle),
+        );
+        ctx.lineTo(
+            ex - headLen * Math.cos(angle + headAngle),
+            ey - headLen * Math.sin(angle + headAngle),
+        );
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
 // --- Public API ---
 
 export { MAP_WIDTH, MAP_HEIGHT };
@@ -368,8 +520,14 @@ export function generateBattleMap(canvas: HTMLCanvasElement, options: BattleMapO
 
     ctx.putImageData(imageData, 0, 0);
 
+    const centroids = computeZoneCentroids(MAP_WIDTH, MAP_HEIGHT, owner, settings.zoneCount);
+
+    // Draw attack arrows before icons so icons render on top
+    const adjacentPairs = findAdjacentPairs(MAP_WIDTH, MAP_HEIGHT, owner, settings.zoneCount);
+    const arrows = computeAttackArrows(centroids, paintedZones, adjacentPairs);
+    drawAttackArrows(ctx, arrows);
+
     if (unpaintedIcon && paintedIcon) {
-        const centroids = computeZoneCentroids(MAP_WIDTH, MAP_HEIGHT, owner, settings.zoneCount);
         drawZoneIcons(ctx, centroids, paintedZones, unpaintedIcon, paintedIcon, 30);
     }
 }

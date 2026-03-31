@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-bullseye as base
+FROM php:8.2-fpm-bookworm as base
 
 WORKDIR /var/www/html/symfony
 
@@ -25,8 +25,7 @@ RUN echo "upload_max_filesize = 10M" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # install Composer
-RUN export COMPOSER_VERSION=2.3.10 \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=${COMPOSER_VERSION}
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 # Development stage
 FROM base as dev

@@ -1,26 +1,27 @@
 .PHONY: build build-prod up up-prod down symfony frontend-build
 
 up:
-	docker-compose up -d
+	docker compose up -d
 
 build-prod:
 	@echo "Building production environment..."
 	@echo "Building Docker containers..."
-	docker-compose -f docker-compose.prod.yml up -d --build
+	docker compose -f docker-compose.prod.yml build --no-cache
+	docker compose -f docker-compose.prod.yml up -d
 
 deploy:
 	make build-prod
 	make up-prod
 
 up-prod:
-	docker-compose -f docker-compose.prod.yml up -d
+	docker compose -f docker-compose.prod.yml up -d
 
 down:
-	docker-compose down
-	docker-compose -f docker-compose.prod.yml down
+	docker compose down
+	docker compose -f docker-compose.prod.yml down
 
 down-prod:
-	docker-compose -f docker-compose.prod.yml down
+	docker compose -f docker-compose.prod.yml down
 
 frontend-build:
 	@echo "Building frontend..."

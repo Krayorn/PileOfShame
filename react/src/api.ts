@@ -165,6 +165,10 @@ export const adminApi = {
   getUsers: () => {
     return api.get('api/admin/users');
   },
+
+  getGlobalStats: () => {
+    return api.get('api/admin/stats');
+  },
 };
 
 // Project API methods

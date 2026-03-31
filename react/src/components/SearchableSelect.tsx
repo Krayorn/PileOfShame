@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 
 interface Option {
     id: string;
@@ -21,29 +21,28 @@ export function SearchableSelect({
     className = ""
 }: SearchableSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedOption, setSelectedOption] = useState<Option | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingSearchTerm, setEditingSearchTerm] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const selectedOption = useMemo(
+        () => options.find(opt => opt.id === value) || null,
+        [value, options]
+    );
+
+    const searchTerm = isEditing ? editingSearchTerm : (selectedOption?.name ?? '');
 
     // Filter options based on search term
     const filteredOptions = options.filter(option =>
         option.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Set selected option when value changes
-    useEffect(() => {
-        const option = options.find(opt => opt.id === value);
-        setSelectedOption(option || null);
-        if (option) {
-            setSearchTerm(option.name);
-        }
-    }, [value, options]);
-
     // Handle click outside to close dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
+                setIsEditing(false);
             }
         };
 
@@ -54,15 +53,15 @@ export function SearchableSelect({
     }, []);
 
     const handleOptionSelect = (option: Option) => {
-        setSelectedOption(option);
-        setSearchTerm(option.name);
+        setIsEditing(false);
         onChange(option.id);
         setIsOpen(false);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newSearchTerm = e.target.value;
-        setSearchTerm(newSearchTerm);
+        setIsEditing(true);
+        setEditingSearchTerm(newSearchTerm);
         setIsOpen(true);
         
         // Clear selection if search term doesn't match current selection
@@ -112,4 +111,4 @@ export function SearchableSelect({
             )}
         </div>
     );
-} 
+}

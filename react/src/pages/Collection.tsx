@@ -632,77 +632,150 @@ export function Collection() {
                             )}
                         </div>
 
-                        {(folder?.miniatures?.length ?? 0) > 1 && (
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="text-xs font-bold text-terminal-fg uppercase tracking-wider">Sort by</span>
-                                <div className="flex gap-2">
-                                    {(['default', 'name', 'status'] as const).map(option => (
+                        {!folderId && folder && folder.folders.length === 0 && folder.miniatures.length === 0 ? (
+                            <TerminalPanel className="mt-2">
+                                <div className="p-6">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <span className="text-amber-500 text-xs font-mono">▶</span>
+                                        <h2 className="text-sm font-bold uppercase tracking-wider text-amber-500">
+                                            Mission Briefing — Deployment Guide
+                                        </h2>
+                                    </div>
+
+                                    <div className="space-y-5 mb-8">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-amber-500 font-mono text-xs">01</span>
+                                                <h3 className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">
+                                                    Organize Your Forces
+                                                </h3>
+                                            </div>
+                                            <p className="text-sm text-terminal-fgDim uppercase tracking-wider ml-6">
+                                                Create folders to group your armies by faction, game system, or however you like.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-amber-500 font-mono text-xs">02</span>
+                                                <h3 className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">
+                                                    Log Your Miniatures
+                                                </h3>
+                                            </div>
+                                            <p className="text-sm text-terminal-fgDim uppercase tracking-wider ml-6">
+                                                Add your minis and track their painting status:
+                                            </p>
+                                            <div className="flex gap-4 mt-2 ml-6">
+                                                <span className="text-xs uppercase tracking-wider text-terminal-gray">■ Gray</span>
+                                                <span className="text-xs text-terminal-fgDim">→</span>
+                                                <span className="text-xs uppercase tracking-wider text-terminal-built">■ Built</span>
+                                                <span className="text-xs text-terminal-fgDim">→</span>
+                                                <span className="text-xs uppercase tracking-wider text-terminal-painted">■ Painted</span>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-amber-500 font-mono text-xs">03</span>
+                                                <h3 className="text-sm font-semibold uppercase tracking-wider text-terminal-fg">
+                                                    Document Your Progress
+                                                </h3>
+                                            </div>
+                                            <p className="text-sm text-terminal-fgDim uppercase tracking-wider ml-6">
+                                                Upload photos to your miniatures to build your collection album.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-terminal-border pt-4 flex gap-3">
                                         <button
-                                            key={option}
-                                            onClick={() => setSortBy(option)}
-                                            className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider border rounded-sm transition-all ${
-                                                sortBy === option
-                                                    ? 'border-terminal-accent text-terminal-accent bg-terminal-bg'
-                                                    : 'border-terminal-border text-terminal-fgDim bg-terminal-bg hover:border-terminal-fg hover:text-terminal-fg'
-                                            }`}
+                                            onClick={() => setShowAddFolderForm(true)}
+                                            className="px-4 py-2 border border-amber-500 bg-terminal-bg text-amber-500 font-semibold uppercase tracking-wider rounded-sm hover:bg-amber-500/10 transition-all text-sm"
                                         >
-                                            {option}
+                                            [+ Create First Folder]
                                         </button>
-                                    ))}
+                                        <button
+                                            onClick={() => setShowAddForm(true)}
+                                            className="px-4 py-2 border border-terminal-border bg-terminal-bg text-terminal-fg font-semibold uppercase tracking-wider rounded-sm hover:bg-terminal-bgLight transition-all text-sm"
+                                        >
+                                            [+ Add First Miniature]
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            </TerminalPanel>
+                        ) : (
+                            <>
+                                {(folder?.miniatures?.length ?? 0) > 1 && (
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <span className="text-xs font-bold text-terminal-fg uppercase tracking-wider">Sort by</span>
+                                        <div className="flex gap-2">
+                                            {(['default', 'name', 'status'] as const).map(option => (
+                                                <button
+                                                    key={option}
+                                                    onClick={() => setSortBy(option)}
+                                                    className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider border rounded-sm transition-all ${
+                                                        sortBy === option
+                                                            ? 'border-terminal-accent text-terminal-accent bg-terminal-bg'
+                                                            : 'border-terminal-border text-terminal-fgDim bg-terminal-bg hover:border-terminal-fg hover:text-terminal-fg'
+                                                    }`}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
-                        <MiniaturesTable
-                            miniatures={getSortedMiniatures(folder?.miniatures || [])}
-                            moveMode={moveMode}
-                            editingId={editingId}
-                            editForm={editForm}
-                            selectedMiniatures={selectedMiniatures}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteMiniature}
-                            onUpdate={handleUpdateMiniature}
-                            onCancelEdit={handleCancelEdit}
-                            onSelectionToggle={toggleMiniatureSelection}
-                            onEditFormChange={setEditForm}
-                            onImageUpload={handleImageUpload}
-                        />
+                                <MiniaturesTable
+                                    miniatures={getSortedMiniatures(folder?.miniatures || [])}
+                                    moveMode={moveMode}
+                                    editingId={editingId}
+                                    editForm={editForm}
+                                    selectedMiniatures={selectedMiniatures}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDeleteMiniature}
+                                    onUpdate={handleUpdateMiniature}
+                                    onCancelEdit={handleCancelEdit}
+                                    onSelectionToggle={toggleMiniatureSelection}
+                                    onEditFormChange={setEditForm}
+                                    onImageUpload={handleImageUpload}
+                                />
 
-                        {folder && (
-                            <Album
-                                pictures={getAllPicturesFromFolder(folder)}
-                                title={`${folder.name} Album`}
-                                onPictureDeleted={(pictureId: string) => {
-                                    // Remove the picture from the folder state
-                                    setFolder(prevFolder => {
-                                        if (!prevFolder) return prevFolder;
-                                        return {
-                                            ...prevFolder,
-                                            miniatures: prevFolder.miniatures.map(miniature => ({
-                                                ...miniature,
-                                                pictures: miniature.pictures.filter(picture => picture.id !== pictureId)
-                                            }))
-                                        };
-                                    });
-                                }}
-                                onPictureUpdated={(pictureId: string, rotation: number) => {
-                                    // Update the picture rotation in the folder state
-                                    setFolder(prevFolder => {
-                                        if (!prevFolder) return prevFolder;
-                                        return {
-                                            ...prevFolder,
-                                            miniatures: prevFolder.miniatures.map(miniature => ({
-                                                ...miniature,
-                                                pictures: miniature.pictures.map(picture =>
-                                                    picture.id === pictureId
-                                                        ? { ...picture, rotation }
-                                                        : picture
-                                                )
-                                            }))
-                                        };
-                                    });
-                                }}
-                            />
+                                {folder && (
+                                    <Album
+                                        pictures={getAllPicturesFromFolder(folder)}
+                                        title={`${folder.name} Album`}
+                                        onPictureDeleted={(pictureId: string) => {
+                                            setFolder(prevFolder => {
+                                                if (!prevFolder) return prevFolder;
+                                                return {
+                                                    ...prevFolder,
+                                                    miniatures: prevFolder.miniatures.map(miniature => ({
+                                                        ...miniature,
+                                                        pictures: miniature.pictures.filter(picture => picture.id !== pictureId)
+                                                    }))
+                                                };
+                                            });
+                                        }}
+                                        onPictureUpdated={(pictureId: string, rotation: number) => {
+                                            setFolder(prevFolder => {
+                                                if (!prevFolder) return prevFolder;
+                                                return {
+                                                    ...prevFolder,
+                                                    miniatures: prevFolder.miniatures.map(miniature => ({
+                                                        ...miniature,
+                                                        pictures: miniature.pictures.map(picture =>
+                                                            picture.id === pictureId
+                                                                ? { ...picture, rotation }
+                                                                : picture
+                                                        )
+                                                    }))
+                                                };
+                                            });
+                                        }}
+                                    />
+                                )}
+                            </>
                         )}
                     </>
                 )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface UseCounterOptions {
     /**
@@ -35,29 +35,24 @@ export function useCounter(
     } = options;
 
     const [count, setCount] = useState(0);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const currentTargetRef = useRef(target);
-    const startTimeRef = useRef<number | null>(null);
-    const countRef = useRef(count);
-    countRef.current = count;
+    const animationRef = useRef<{ interval: NodeJS.Timeout | null; timeout: NodeJS.Timeout | null }>({
+        interval: null,
+        timeout: null,
+    });
+
+    const cleanup = useCallback(() => {
+        if (animationRef.current.interval) {
+            clearInterval(animationRef.current.interval);
+            animationRef.current.interval = null;
+        }
+        if (animationRef.current.timeout) {
+            clearTimeout(animationRef.current.timeout);
+            animationRef.current.timeout = null;
+        }
+    }, []);
 
     useEffect(() => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-        }
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-        }
-
-        if (restartOnChange) {
-            setCount(0);
-            countRef.current = 0;
-        }
-
-        currentTargetRef.current = target;
+        cleanup();
 
         if (typeof target !== 'number' || isNaN(target)) {
             setCount(0);
@@ -71,53 +66,41 @@ export function useCounter(
             return;
         }
 
-        const startValue = restartOnChange ? 0 : countRef.current;
-        timeoutRef.current = setTimeout(() => {
-            const difference = targetValue - startValue;
-            startTimeRef.current = Date.now();
+        const startValue = restartOnChange ? 0 : undefined;
+        if (restartOnChange) {
+            setCount(0);
+        }
 
-            intervalRef.current = setInterval(() => {
-                if (currentTargetRef.current !== target) {
-                    if (intervalRef.current) {
-                        clearInterval(intervalRef.current);
-                        intervalRef.current = null;
+        animationRef.current.timeout = setTimeout(() => {
+            const startTime = Date.now();
+
+            setCount((current) => {
+                const resolvedStart = startValue ?? current;
+
+                animationRef.current.interval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const difference = targetValue - resolvedStart;
+                    const currentValue = Math.floor(resolvedStart + (difference * progress));
+
+                    if (currentValue >= targetValue) {
+                        setCount(targetValue);
+                        if (animationRef.current.interval) {
+                            clearInterval(animationRef.current.interval);
+                            animationRef.current.interval = null;
+                        }
+                    } else {
+                        setCount(currentValue);
                     }
-                    return;
-                }
+                }, 16);
 
-                if (!startTimeRef.current) {
-                    startTimeRef.current = Date.now();
-                }
-
-                const elapsed = Date.now() - startTimeRef.current;
-                const progress = Math.min(elapsed / duration, 1);
-
-                const currentValue = Math.floor(startValue + (difference * progress));
-
-                if (currentValue >= targetValue) {
-                    setCount(targetValue);
-                    if (intervalRef.current) {
-                        clearInterval(intervalRef.current);
-                        intervalRef.current = null;
-                    }
-                } else {
-                    setCount(currentValue);
-                }
-            }, 16);
+                return resolvedStart;
+            });
         }, delay);
 
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-                timeoutRef.current = null;
-            }
-        };
+        return cleanup;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [target, duration, delay, restartOnChange]);
 
     return count;
 }
-
