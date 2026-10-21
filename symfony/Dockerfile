@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-bookworm as base
+FROM php:8.2.35-fpm-bookworm as base
 
 WORKDIR /var/www/html/symfony
 
