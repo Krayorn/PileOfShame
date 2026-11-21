@@ -1,4 +1,4 @@
-FROM nginx:1.21-alpine as base
+FROM nginx:1.30.7-alpine AS base
 
 RUN apk update && apk add --no-cache bash
 
@@ -17,7 +17,7 @@ RUN mkdir -p /var/log/nginx
 CMD ["nginx", "-g", "daemon off;"]
 
 # Build React app
-FROM node:20-alpine as frontend-build
+FROM node:24-alpine AS frontend-build
 
 WORKDIR /app
 COPY react/package.json react/package-lock.json ./
